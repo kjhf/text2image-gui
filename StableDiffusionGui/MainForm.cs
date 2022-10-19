@@ -54,7 +54,7 @@ namespace StableDiffusionGui
         #endregion References
 
         public bool IsInFocus()
-        { return (ActiveForm == this); }
+        { return ActiveForm == this; }
 
         private float _defaultPromptFontSize;
 
@@ -80,7 +80,7 @@ namespace StableDiffusionGui
 
             if (Program.Busy)
             {
-                var dialogResult = UiUtils.ShowMessageBox($"The program is still busy. Are you sure you want to quit?", nameof(UiUtils.MessageType.Warning), MessageBoxButtons.YesNo);
+                var dialogResult = UiUtils.ShowMessageBox("The program is still busy. Are you sure you want to quit?", nameof(UiUtils.MessageType.Warning), MessageBoxButtons.YesNo);
                 e.Cancel = dialogResult != DialogResult.Yes;
             }
         }
@@ -164,7 +164,7 @@ namespace StableDiffusionGui
             string[] lines = textboxPrompt.Text.SplitIntoLines();
             textboxPrompt.Text = string.Join(Environment.NewLine, lines.Select(x => MainUi.SanitizePrompt(x)));
 
-            if (upDownSeed.Text == "")
+            if (upDownSeed.Text?.Length == 0)
                 SetSeed();
         }
 
@@ -209,7 +209,10 @@ namespace StableDiffusionGui
             upDownSeed.Value = s.Params["seed"].GetLong();
             comboxSampler.Text = s.Params["sampler"]; // TODO: MAKE THIS WORK WITH ALIASES
             MainUi.CurrentInitImgPath = s.Params["initImg"];
-            sliderInitStrength.Value = (s.Params["initStrengths"].Split(",")[0].GetFloat() * 40f).RoundToInt(); sliderInitStrength_Scroll(null, null);
+            int strength = (s.Params["initStrengths"].Split(",")[0].GetFloat() * 40f).RoundToInt();
+            sliderInitStrength.Value = strength < sliderInitStrength.Minimum ? sliderInitStrength.Minimum :
+                strength > sliderInitStrength.Maximum ? sliderInitStrength.Maximum : strength;
+            sliderInitStrength_Scroll(null, null);
             MainUi.CurrentEmbeddingPath = s.Params["embedding"];
             checkboxSeamless.Checked = s.Params["seamless"] == true.ToString();
             checkboxInpainting.Checked = s.Params["inpainting"] == "masked";
@@ -521,13 +524,13 @@ namespace StableDiffusionGui
             if (!string.IsNullOrWhiteSpace(MainUi.CurrentInitImgPath) && !File.Exists(MainUi.CurrentInitImgPath))
             {
                 MainUi.CurrentInitImgPath = "";
-                Logger.Log($"Initialization image was cleared because the file no longer exists.");
+                Logger.Log("Initialization image was cleared because the file no longer exists.");
             }
 
             if (!string.IsNullOrWhiteSpace(MainUi.CurrentEmbeddingPath) && !File.Exists(MainUi.CurrentEmbeddingPath))
             {
                 MainUi.CurrentEmbeddingPath = "";
-                Logger.Log($"Concept was cleared because the file no longer exists.");
+                Logger.Log("Concept was cleared because the file no longer exists.");
             }
 
             bool imgExists = File.Exists(MainUi.CurrentInitImgPath);
@@ -584,7 +587,7 @@ namespace StableDiffusionGui
         private void btnDebug_Click(object sender, EventArgs e)
         {
             menuStripLogs.Items.Clear();
-            var openLogs = menuStripLogs.Items.Add($"Open Logs Folder");
+            var openLogs = menuStripLogs.Items.Add("Open Logs Folder");
             openLogs.Click += (s, ea) => Process.Start("explorer", Paths.GetLogPath().Wrap());
 
             foreach (var log in Logger.SessionLogs)
