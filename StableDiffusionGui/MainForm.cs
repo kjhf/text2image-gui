@@ -1,14 +1,4 @@
-﻿using Microsoft.WindowsAPICodePack.Dialogs;
-using Microsoft.WindowsAPICodePack.Taskbar;
-using StableDiffusionGui.Data;
-using StableDiffusionGui.Forms;
-using StableDiffusionGui.Installation;
-using StableDiffusionGui.Io;
-using StableDiffusionGui.Main;
-using StableDiffusionGui.MiscUtils;
-using StableDiffusionGui.Os;
-using StableDiffusionGui.Ui;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
@@ -18,6 +8,16 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Microsoft.WindowsAPICodePack.Dialogs;
+using Microsoft.WindowsAPICodePack.Taskbar;
+using StableDiffusionGui.Data;
+using StableDiffusionGui.Forms;
+using StableDiffusionGui.Installation;
+using StableDiffusionGui.Io;
+using StableDiffusionGui.Main;
+using StableDiffusionGui.MiscUtils;
+using StableDiffusionGui.Os;
+using StableDiffusionGui.Ui;
 using Paths = StableDiffusionGui.Io.Paths;
 
 namespace StableDiffusionGui
@@ -25,20 +25,36 @@ namespace StableDiffusionGui
     public partial class MainForm : Form
     {
         [Flags]
-        public enum EXECUTION_STATE : uint { ES_AWAYMODE_REQUIRED = 0x00000040, ES_CONTINUOUS = 0x80000000, ES_DISPLAY_REQUIRED = 0x00000002, ES_SYSTEM_REQUIRED = 0x00000001 }
+        public enum EXECUTION_STATE : uint
+        { ES_AWAYMODE_REQUIRED = 0x00000040, ES_CONTINUOUS = 0x80000000, ES_DISPLAY_REQUIRED = 0x00000002, ES_SYSTEM_REQUIRED = 0x00000001 }
+
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags); // This should prevent Windows from going to sleep
+        private static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags); // This should prevent Windows from going to sleep
 
         #region References
-        public Button RunBtn { get { return runBtn; } }
-        public TextBox TextboxPrompt { get { return textboxPrompt; } }
-        public PictureBox PictBoxImgViewer { get { return pictBoxImgViewer; } }
-        public Label OutputImgLabel { get { return outputImgLabel; } }
-        public Button BtnExpandPromptField { get { return btnExpandPromptField; } }
-        public Panel PanelBg { get { return panel1; } }
-        #endregion
 
-        public bool IsInFocus() { return (ActiveForm == this); }
+        public Button RunBtn
+        { get { return runBtn; } }
+
+        public TextBox TextboxPrompt
+        { get { return textboxPrompt; } }
+
+        public PictureBox PictBoxImgViewer
+        { get { return pictBoxImgViewer; } }
+
+        public Label OutputImgLabel
+        { get { return outputImgLabel; } }
+
+        public Button BtnExpandPromptField
+        { get { return btnExpandPromptField; } }
+
+        public Panel PanelBg
+        { get { return panel1; } }
+
+        #endregion References
+
+        public bool IsInFocus()
+        { return (ActiveForm == this); }
 
         private float _defaultPromptFontSize;
 
@@ -64,7 +80,7 @@ namespace StableDiffusionGui
 
             if (Program.Busy)
             {
-                DialogResult dialogResult = UiUtils.ShowMessageBox($"The program is still busy. Are you sure you want to quit?", UiUtils.MessageType.Warning.ToString(), MessageBoxButtons.YesNo);
+                var dialogResult = UiUtils.ShowMessageBox($"The program is still busy. Are you sure you want to quit?", nameof(UiUtils.MessageType.Warning), MessageBoxButtons.YesNo);
                 e.Cancel = dialogResult != DialogResult.Yes;
             }
         }
@@ -139,13 +155,13 @@ namespace StableDiffusionGui
 
         public void CleanPrompt()
         {
-            if (File.Exists(MainUi.CurrentEmbeddingPath) && Path.GetExtension(MainUi.CurrentEmbeddingPath).ToLower() == ".bin")
+            if (File.Exists(MainUi.CurrentEmbeddingPath) && string.Equals(Path.GetExtension(MainUi.CurrentEmbeddingPath), ".bin", StringComparison.OrdinalIgnoreCase))
             {
                 string conceptName = Path.GetFileNameWithoutExtension(MainUi.CurrentEmbeddingPath);
                 textboxPrompt.Text = textboxPrompt.Text.Replace("*", $"<{conceptName.Trim()}>");
             }
 
-            var lines = textboxPrompt.Text.SplitIntoLines();
+            string[] lines = textboxPrompt.Text.SplitIntoLines();
             textboxPrompt.Text = string.Join(Environment.NewLine, lines.Select(x => MainUi.SanitizePrompt(x)));
 
             if (upDownSeed.Text == "")
@@ -203,7 +219,7 @@ namespace StableDiffusionGui
 
         public TtiSettings GetCurrentTtiSettings()
         {
-            TtiSettings settings = new TtiSettings
+            return new TtiSettings
             {
                 Implementation = Config.GetBool("checkboxOptimizedSd") ? Implementation.StableDiffusionOptimized : Implementation.StableDiffusion,
                 Prompts = textboxPrompt.Text.SplitIntoLines().Where(x => !string.IsNullOrWhiteSpace(x)).ToArray(),
@@ -223,8 +239,6 @@ namespace StableDiffusionGui
                             { "model", Config.Get(Config.Key.comboxSdModel) },
                         },
             };
-
-            return settings;
         }
 
         private void runBtn_Click(object sender, EventArgs e)
@@ -269,7 +283,7 @@ namespace StableDiffusionGui
 
                     if (fromQueue)
                     {
-                        if (MainUi.Queue.Where(x => x != null).Count() < 0)
+                        if (MainUi.Queue.Count(x => x != null) < 0)
                         {
                             TextToImage.Cancel("Queue is empty.");
                             return;
@@ -309,10 +323,10 @@ namespace StableDiffusionGui
             Control[] controlsToHide = new Control[] { };
             progressCircle.Visible = state != Program.BusyState.Standby;
 
-            foreach (Control c in controlsToDisable)
+            foreach (var c in controlsToDisable)
                 c.Enabled = !imageGen;
 
-            foreach (Control c in controlsToHide)
+            foreach (var c in controlsToHide)
                 c.Visible = !imageGen;
 
             if (!imageGen)
@@ -379,7 +393,7 @@ namespace StableDiffusionGui
             labelInitStrength.Text = sliderInitStrength.ActualValueFloat.ToString("0.000");
         }
 
-        #endregion
+        #endregion Sliders
 
         private void btnOpenOutFolder_Click(object sender, EventArgs e)
         {
@@ -403,7 +417,7 @@ namespace StableDiffusionGui
             Process.Start("https://discord.gg/fZwWSnV5WA");
         }
 
-        #endregion
+        #endregion Link Buttons
 
         #region Output Image Menu Strip
 
@@ -438,7 +452,7 @@ namespace StableDiffusionGui
             MainUi.HandleDroppedFiles(new string[] { ImagePreview.CurrentImagePath });
         }
 
-        #endregion
+        #endregion Output Image Menu Strip
 
         private void cliButton_Click(object sender, EventArgs e)
         {
@@ -473,7 +487,7 @@ namespace StableDiffusionGui
             MainUi.HandleDroppedFiles((string[])e.Data.GetData(DataFormats.FileDrop));
         }
 
-        #endregion
+        #endregion Drag N Drop
 
         #region Init Img and Embedding
 
@@ -565,18 +579,18 @@ namespace StableDiffusionGui
             UpdateInitImgAndEmbeddingUi();
         }
 
-        #endregion
+        #endregion Init Img and Embedding
 
         private void btnDebug_Click(object sender, EventArgs e)
         {
             menuStripLogs.Items.Clear();
             var openLogs = menuStripLogs.Items.Add($"Open Logs Folder");
-            openLogs.Click += (s, ea) => { Process.Start("explorer", Paths.GetLogPath().Wrap()); };
+            openLogs.Click += (s, ea) => Process.Start("explorer", Paths.GetLogPath().Wrap());
 
             foreach (var log in Logger.SessionLogs)
             {
-                ToolStripItem newItem = menuStripLogs.Items.Add($"Copy {log.Key}");
-                newItem.Click += (s, ea) => { OsUtils.SetClipboard(Logger.SessionLogs[log.Key]); };
+                var newItem = menuStripLogs.Items.Add($"Copy {log.Key}");
+                newItem.Click += (s, ea) => OsUtils.SetClipboard(Logger.SessionLogs[log.Key]);
             }
 
             menuStripLogs.Show(Cursor.Position);
@@ -662,7 +676,7 @@ namespace StableDiffusionGui
         {
             var settings = GetCurrentTtiSettings();
 
-            if (settings.Prompts.Where(x => !string.IsNullOrWhiteSpace(x)).Any())
+            if (settings.Prompts.Any(x => !string.IsNullOrWhiteSpace(x)))
                 MainUi.Queue.Add(settings);
         }
 
@@ -680,8 +694,8 @@ namespace StableDiffusionGui
                 return;
             }
 
-            var prevSeedVal = upDownSeed.Value;
-            var prevIterVal = upDownIterations.Value;
+            decimal prevSeedVal = upDownSeed.Value;
+            decimal prevIterVal = upDownIterations.Value;
             upDownSeed.Value = ImagePreview.CurrentImageMetadata.Seed;
             upDownIterations.Value = 1;
             runBtn_Click(null, null);

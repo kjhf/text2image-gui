@@ -1,23 +1,20 @@
-﻿using StableDiffusionGui.Data;
-using StableDiffusionGui.Main;
-using StableDiffusionGui.MiscUtils;
-using StableDiffusionGui.Os;
-using StableDiffusionGui.Properties;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Management.Automation;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
+using StableDiffusionGui.Data;
+using StableDiffusionGui.Main;
+using StableDiffusionGui.MiscUtils;
+using StableDiffusionGui.Os;
+using StableDiffusionGui.Properties;
 
 namespace StableDiffusionGui.Io
 {
-    internal class IoUtils
+    internal static class IoUtils
     {
         public static Image GetImage(string path)
         {
@@ -36,9 +33,8 @@ namespace StableDiffusionGui.Io
         public static string[] ReadLines(string path)
         {
             List<string> lines = new List<string>();
-            using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 0x1000, FileOptions.SequentialScan))
-
-            using (var reader = new StreamReader(stream, Encoding.UTF8))
+            using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 0x1000, FileOptions.SequentialScan))
+            using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
             {
                 string line;
                 while ((line = reader.ReadLine()) != null)
@@ -51,7 +47,7 @@ namespace StableDiffusionGui.Io
         public static bool IsPathDirectory(string path)
         {
             if (path == null)
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
 
             path = path.Trim();
 
@@ -110,13 +106,11 @@ namespace StableDiffusionGui.Io
 
         private static void CopyWork(DirectoryInfo source, DirectoryInfo target, bool move)
         {
-            DirectoryInfo[] directories = source.GetDirectories();
-            foreach (DirectoryInfo directoryInfo in directories)
+            foreach (var directoryInfo in source.GetDirectories())
             {
                 CopyWork(directoryInfo, target.CreateSubdirectory(directoryInfo.Name), move);
             }
-            FileInfo[] files = source.GetFiles();
-            foreach (FileInfo fileInfo in files)
+            foreach (var fileInfo in source.GetFiles())
             {
                 if (move)
                     fileInfo.MoveTo(Path.Combine(target.FullName, fileInfo.Name));
@@ -152,7 +146,7 @@ namespace StableDiffusionGui.Io
             else
                 files = d.GetFiles(wildcard, SearchOption.TopDirectoryOnly);
 
-            foreach (FileInfo file in files)
+            foreach (var file in files)
             {
                 ReplaceInFilename(file.FullName, textToFind, textToReplace);
                 counter++;
@@ -192,7 +186,7 @@ namespace StableDiffusionGui.Io
             }
         }
 
-        static bool TryCopy(string source, string target, bool overwrite = true, bool showLog = false)
+        private static bool TryCopy(string source, string target, bool overwrite = true, bool showLog = false)
         {
             try
             {
@@ -233,13 +227,13 @@ namespace StableDiffusionGui.Io
             sw.Restart();
             int counter = startAt;
             DirectoryInfo d = new DirectoryInfo(path);
-            FileInfo[] files = d.GetFiles();
+            var files = d.GetFiles();
             var filesSorted = files.OrderBy(n => n);
 
             if (inverse)
                 filesSorted.Reverse();
 
-            foreach (FileInfo file in files)
+            foreach (var file in files)
             {
                 string dir = new DirectoryInfo(file.FullName).Parent.FullName;
                 File.Move(file.FullName, Path.Combine(dir, counter.ToString().PadLeft(zPad, '0') + Path.GetExtension(file.FullName)));
@@ -281,8 +275,7 @@ namespace StableDiffusionGui.Io
 
                 path = renamedPath;
 
-                bool returnVal = await Task.Run(async () => { return TryDeleteIfExists(path); });
-                return returnVal;
+                return await Task.Run(() => Task.FromResult(TryDeleteIfExists(path)));
             }
             catch (Exception e)
             {
@@ -291,7 +284,7 @@ namespace StableDiffusionGui.Io
                 if (retries > 0)
                 {
                     await Task.Delay(2000);
-                    retries -= 1;
+                    retries--;
                     return await TryDeleteIfExistsAsync(path, retries);
                 }
                 else
@@ -501,7 +494,7 @@ namespace StableDiffusionGui.Io
                 if (path == null || !Directory.Exists(path))
                     return new string[0];
 
-                SearchOption opt = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+                var opt = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
                 return Directory.GetFiles(path, pattern, opt).OrderBy(x => Path.GetFileName(x)).ToArray();
             }
             catch (Exception ex)
@@ -528,8 +521,7 @@ namespace StableDiffusionGui.Io
                 if (path == null || !Directory.Exists(path))
                     return new FileInfo[0];
 
-
-                SearchOption opt = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+                var opt = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
                 DirectoryInfo dir = new DirectoryInfo(path);
                 return dir.GetFiles(pattern, opt).OrderBy(x => x.Name).ToArray();
             }
@@ -564,12 +556,12 @@ namespace StableDiffusionGui.Io
             try
             {
                 string[] files;
-                StringComparison ignCase = StringComparison.OrdinalIgnoreCase;
+                const StringComparison IgnCase = StringComparison.OrdinalIgnoreCase;
 
                 if (includedExtensions == null)
                     files = Directory.GetFiles(path);
                 else
-                    files = Directory.GetFiles(path).Where(file => includedExtensions.Any(x => file.EndsWith(x, ignCase))).ToArray();
+                    files = Directory.GetFiles(path).Where(file => includedExtensions.Any(x => file.EndsWith(x, IgnCase))).ToArray();
 
                 foreach (string file in files)
                 {
@@ -580,8 +572,7 @@ namespace StableDiffusionGui.Io
                     return size;
 
                 // Add subdirectory sizes.
-                DirectoryInfo[] dis = new DirectoryInfo(path).GetDirectories();
-                foreach (DirectoryInfo di in dis)
+                foreach (var di in new DirectoryInfo(path).GetDirectories())
                     size += GetDirSize(di.FullName, true, includedExtensions);
             }
             catch (Exception e)
@@ -633,9 +624,7 @@ namespace StableDiffusionGui.Io
             try
             {
                 string driveLetter = path.Substring(0, 2);      // Make 'C:/some/random/path' => 'C:' etc
-                DriveInfo[] allDrives = DriveInfo.GetDrives();
-
-                foreach (DriveInfo d in allDrives)
+                foreach (var d in DriveInfo.GetDrives())
                 {
                     if (d.IsReady && d.Name.StartsWith(driveLetter))
                     {
@@ -656,7 +645,7 @@ namespace StableDiffusionGui.Io
 
         public static string[] GetUniqueExtensions(string path, bool recursive = false)
         {
-            FileInfo[] fileInfos = GetFileInfosSorted(path, recursive);
+            var fileInfos = GetFileInfosSorted(path, recursive);
             List<string> exts = fileInfos.Select(x => x.Extension).ToList();
             return exts.Select(x => x).Distinct().ToArray();
         }
@@ -667,11 +656,11 @@ namespace StableDiffusionGui.Io
             {
                 IEnumerable<MetadataExtractor.Directory> directories = MetadataExtractor.ImageMetadataReader.ReadMetadata(path);
 
-                MetadataExtractor.Directory pngTextDir = directories.Where(x => x.Name.ToLower() == "png-text").FirstOrDefault();
+                var pngTextDir = directories.FirstOrDefault(x => string.Equals(x.Name, "png-text", StringComparison.OrdinalIgnoreCase));
 
                 if (pngTextDir != null)
                 {
-                    MetadataExtractor.Tag dreamTag = pngTextDir.Tags.Where(x => x.Description.Contains(keword)).FirstOrDefault();
+                    var dreamTag = pngTextDir.Tags.FirstOrDefault(x => x.Description.Contains(keword));
 
                     if (dreamTag != null)
                         return new ImageMetadata(path, dreamTag.Description.Split(keword).Last());
@@ -679,7 +668,6 @@ namespace StableDiffusionGui.Io
             }
             catch (Exception ex)
             {
-
             }
 
             return new ImageMetadata();
@@ -691,7 +679,7 @@ namespace StableDiffusionGui.Io
                 return;
 
             text = text.Replace("\"", "\\\""); // Escape quotation marks
-            Process p = OsUtils.NewProcess(!OsUtils.ShowHiddenCmd());
+            var p = OsUtils.NewProcess(!OsUtils.ShowHiddenCmd());
             p.StartInfo.Arguments = $"/C cd /D {Paths.GetDataPath().Wrap()} && {TtiUtils.GetEnvVarsSd()} && call activate.bat mb/envs/ldo && " +
                 $"python {Constants.Dirs.RepoSd}/addmetadata.py -i {imgPath.Wrap()} -t {text.Wrap()} {(string.IsNullOrWhiteSpace(keyName) ? "" : $"-k {keyName}")}";
             p.Start();
@@ -705,7 +693,7 @@ namespace StableDiffusionGui.Io
                 GetFileInfosSorted(rootDir, recursive).ToList().ForEach(x => x.Attributes = newAttributes);
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return false;
             }
@@ -723,9 +711,8 @@ namespace StableDiffusionGui.Io
         {
             try
             {
-                using (FileStream stream = file.Open(FileMode.Open, FileAccess.Read, FileShare.None))
+                using (var stream = file.Open(FileMode.Open, FileAccess.Read, FileShare.None))
                 {
-                    stream.Close();
                 }
             }
             catch (IOException)

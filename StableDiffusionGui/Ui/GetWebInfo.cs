@@ -9,7 +9,7 @@ using System.Windows.Forms;
 
 namespace StableDiffusionGui.Ui
 {
-    internal class GetWebInfo
+    internal static class GetWebInfo
     {
         public static async Task LoadNews(Label newsLabel)
         {

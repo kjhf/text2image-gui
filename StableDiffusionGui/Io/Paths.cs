@@ -1,13 +1,13 @@
-﻿using Newtonsoft.Json;
-using StableDiffusionGui.Main;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Newtonsoft.Json;
+using StableDiffusionGui.Main;
 
 namespace StableDiffusionGui.Io
 {
-    internal class Paths
+    internal static class Paths
     {
         public static string SessionTimestamp;
 
@@ -82,7 +82,6 @@ namespace StableDiffusionGui.Io
                 if (customModelDirsList != null)
                     mdlFolders.AddRange(customModelDirsList);
 
-
                 foreach (string folderPath in mdlFolders)
                     list.AddRange(IoUtils.GetFileInfosSorted(folderPath, false, pattern).ToList());
 
@@ -99,7 +98,7 @@ namespace StableDiffusionGui.Io
 
         public static FileInfo GetModel(string filename, bool anyExtension = false)
         {
-            return GetModels().Where(x => x.Name == filename).FirstOrDefault();
+            return GetModels().FirstOrDefault(x => x.Name == filename);
         }
     }
 }

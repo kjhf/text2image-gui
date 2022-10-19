@@ -53,7 +53,7 @@ namespace StableDiffusionGui.Forms
 
         private void SetMaxZoom()
         {
-            Screen smallestScreen = Screen.AllScreens.OrderBy(x => x.Bounds.Height).First();
+            var smallestScreen = Screen.AllScreens.OrderBy(x => x.Bounds.Height).First();
 
             while (true)
             {
@@ -79,7 +79,7 @@ namespace StableDiffusionGui.Forms
 
         private void SetZoom(int newZoomPercent = 0) // Default = 0 => Do not change zoom, just apply the current value
         {
-            Size oldSize = Size;
+            var oldSize = Size;
 
             if (newZoomPercent > 0)
                 _currentZoom = newZoomPercent;
@@ -89,7 +89,7 @@ namespace StableDiffusionGui.Forms
             Size = new Size((CurrentImage.Width * zoomFactor).RoundToInt(), (CurrentImage.Height * zoomFactor).RoundToInt());
 
             // Keep centered after zooming:
-            Size sizeDifference = Size - oldSize;
+            var sizeDifference = Size - oldSize;
             Location = new Point(Location.X - (sizeDifference.Width / 2f).RoundToInt(), Location.Y - (sizeDifference.Height / 2f).RoundToInt());
         }
 
@@ -118,7 +118,7 @@ namespace StableDiffusionGui.Forms
 
         private void CycleTiling()
         {
-            _currentTiling = _currentTiling == 3 ? 1 : _currentTiling += 1;
+            _currentTiling = _currentTiling == 3 ? 1 : ++_currentTiling;
             SetImage(CurrentImage, _currentTiling);
             SetInfoLabel($"Tiling set to {_currentTiling}x{_currentTiling}");
         }

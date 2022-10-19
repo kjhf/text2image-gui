@@ -16,8 +16,8 @@ namespace StableDiffusionGui.Forms
     {
         private Dictionary<string, string> _uiStrings = new Dictionary<string, string>()
         {
-            { Enums.Models.Format.Fp16.ToString(), "Half Precision (FP16 - 2 GB)" },
-            { Enums.Models.Format.Fp32.ToString(), "Full Precision (FP32 - 4 GB)" },
+            { nameof(Enums.Models.Format.Fp16), "Half Precision (FP16 - 2 GB)" },
+            { nameof(Enums.Models.Format.Fp32), "Full Precision (FP32 - 4 GB)" },
         };
 
         public PruneModelsForm()
@@ -59,7 +59,7 @@ namespace StableDiffusionGui.Forms
             try
             {
                 bool fp16 = (Enums.Models.Format)comboxPrunePrecision.SelectedIndex == Enums.Models.Format.Fp16;
-                FileInfo model = Paths.GetModel(comboxModel.Text);
+                var model = Paths.GetModel(comboxModel.Text);
 
                 Logger.ClearLogBox();
                 Logger.Log($"Pruning model '{Path.GetFileNameWithoutExtension(model.Name)}' and saving as fp{(fp16 ? "16" : "32")} checkpoint...");
@@ -69,14 +69,14 @@ namespace StableDiffusionGui.Forms
 
                 List<string> outLines = new List<string>();
 
-                Process p = OsUtils.NewProcess(!OsUtils.ShowHiddenCmd());
+                var p = OsUtils.NewProcess(!OsUtils.ShowHiddenCmd());
                 p.StartInfo.Arguments = $"{OsUtils.GetCmdArg()} cd /D {Paths.GetDataPath().Wrap()} && {TtiUtils.GetEnvVarsSd()} && call activate.bat mb/envs/ldo && " +
                     $"python {Constants.Dirs.RepoSd}/scripts/prune_model.py -i {model.FullName.Wrap()} -o {outPath.Wrap(true)} {(fp16 ? "-half" : "")}";
 
                 if (!OsUtils.ShowHiddenCmd())
                 {
-                    p.OutputDataReceived += (sender, line) => { Logger.Log(line?.Data, true, false, Constants.Lognames.Prune); };
-                    p.ErrorDataReceived += (sender, line) => { Logger.Log(line?.Data, true, false, Constants.Lognames.Prune); };
+                    p.OutputDataReceived += (sender, line) => Logger.Log(line?.Data, true, false, Constants.Lognames.Prune);
+                    p.ErrorDataReceived += (sender, line) => Logger.Log(line?.Data, true, false, Constants.Lognames.Prune);
                 }
 
                 Logger.Log($"cmd {p.StartInfo.Arguments}", true);

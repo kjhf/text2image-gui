@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace StableDiffusionGui.MiscUtils
 {
-    internal class Parser
+    internal static class Parser
     {
         public static Size GetSize (string s, string delimiter = "x")
         {

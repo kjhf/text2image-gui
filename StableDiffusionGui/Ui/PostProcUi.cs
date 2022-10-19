@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace StableDiffusionGui.Ui
+﻿namespace StableDiffusionGui.Ui
 {
-    internal class PostProcUi
+    internal static class PostProcUi
     {
-        public static int UpscaleFactor;
+        //public static int UpscaleFactor;
         public static float CurrentGfpganStrength;
+
         public static float CurrentCfFidelity;
     }
 }

@@ -74,7 +74,7 @@ namespace StableDiffusionGui.Forms
         private IEnumerable<TtiSettings> Filter (IEnumerable<TtiSettings> ttiSettings, string text)
         {
             if (!string.IsNullOrWhiteSpace(text))
-                return ttiSettings.Where(x => x.Prompts.FirstOrDefault().ToLower().Contains(text.ToLower()));
+                return ttiSettings.Where(x => x.Prompts.FirstOrDefault().IndexOf(text, StringComparison.OrdinalIgnoreCase) >= 0);
             else
                 return ttiSettings;
         }
@@ -148,7 +148,7 @@ namespace StableDiffusionGui.Forms
         {
             var settings = Program.MainForm.GetCurrentTtiSettings();
 
-            if (!settings.Prompts.Where(x => !string.IsNullOrWhiteSpace(x)).Any())
+            if (!settings.Prompts.Any(x => !string.IsNullOrWhiteSpace(x)))
                 return;
 
             MainUi.Queue.Add(settings);

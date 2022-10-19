@@ -16,7 +16,7 @@ using Tulpep.NotificationWindow;
 
 namespace StableDiffusionGui.Os
 {
-    internal class OsUtils
+    internal static class OsUtils
     {
         public static string GetProcStdOut(Process proc, bool includeStdErr = false, ProcessPriorityClass priority = ProcessPriorityClass.BelowNormal)
         {
@@ -67,7 +67,7 @@ namespace StableDiffusionGui.Os
 
         public static bool IsProcessHidden(Process proc)
         {
-            bool defaultVal = true;
+            const bool defaultVal = true;
 
             try
             {
@@ -83,7 +83,7 @@ namespace StableDiffusionGui.Os
                     return defaultVal;
                 }
 
-                ProcessStartInfo si = proc.StartInfo;
+                var si = proc.StartInfo;
                 return !si.UseShellExecute && si.CreateNoWindow;
             }
             catch (Exception e)
@@ -103,7 +103,7 @@ namespace StableDiffusionGui.Os
         {
             ManagementObjectSearcher processSearcher = new ManagementObjectSearcher
               ("Select * From Win32_Process Where ParentProcessID=" + pid);
-            ManagementObjectCollection processCollection = processSearcher.Get();
+            var processCollection = processSearcher.Get();
 
             try
             {
@@ -164,7 +164,7 @@ namespace StableDiffusionGui.Os
             {
                 using (ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT * FROM Win32_OperatingSystem"))
                 {
-                    ManagementObjectCollection information = searcher.Get();
+                    var information = searcher.Get();
 
                     if (information != null)
                     {
@@ -223,7 +223,7 @@ namespace StableDiffusionGui.Os
 
         public static void Shutdown()
         {
-            Process proc = NewProcess(true);
+            var proc = NewProcess(true);
             proc.StartInfo.Arguments = "/C shutdown -s -t 0";
             proc.Start();
         }
@@ -243,7 +243,7 @@ namespace StableDiffusionGui.Os
             if (onlyIfWindowIsInBackground && Program.MainForm.IsInFocus())
                 return;
 
-            var popupNotifier = new PopupNotifier { TitleText = title, ContentText = text, IsRightToLeft = false };
+            PopupNotifier popupNotifier = new PopupNotifier { TitleText = title, ContentText = text, IsRightToLeft = false };
             popupNotifier.BodyColor = System.Drawing.ColorTranslator.FromHtml("#323232");
             popupNotifier.ContentColor = System.Drawing.Color.White;
             popupNotifier.TitleColor = System.Drawing.Color.LightGray;
@@ -298,7 +298,7 @@ namespace StableDiffusionGui.Os
         public static void SendCtrlC (int pid)
         {
             string exePath = Path.Combine(Paths.GetBinPath(), $"{Constants.Bins.WindowsKill}.exe");
-            Process p = NewProcess(true, exePath);
+            var p = NewProcess(true, exePath);
             p.StartInfo.Arguments = $"-SIGINT {pid}";
             Logger.Log($"{Path.GetFileName(exePath)} {p.StartInfo.Arguments}", true);
             p.Start();
@@ -307,7 +307,7 @@ namespace StableDiffusionGui.Os
 
         public static string GetTemporaryPathVariable(IEnumerable<string> additionalPaths)
         {
-            var paths = Environment.GetEnvironmentVariable("PATH").Split(';');
+            string[] paths = Environment.GetEnvironmentVariable("PATH").Split(';');
             List<string> newPaths = new List<string>();
 
             newPaths.AddRange(additionalPaths);
@@ -319,7 +319,7 @@ namespace StableDiffusionGui.Os
         public static void AttachOrphanHitman(Process p)
         {
             string exePath = Path.Combine(Paths.GetBinPath(), $"{Constants.Bins.OrphanHitman}.exe");
-            Process hitmanProc = NewProcess(true, exePath);
+            var hitmanProc = NewProcess(true, exePath);
             hitmanProc.StartInfo.Arguments = $"-parent-pid={Process.GetCurrentProcess().Id} -child-pid={p.Id}";
             hitmanProc.Start();
         }

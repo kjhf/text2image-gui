@@ -14,13 +14,13 @@ using Paths = StableDiffusionGui.Io.Paths;
 
 namespace StableDiffusionGui.Main
 {
-    internal class TtiUtils
+    internal static class TtiUtils
     {
         /// <returns> Path to resized image </returns>
         public static string ResizeInitImg(string path, Size targetSize, bool print = false)
         {
             string outPath = Path.Combine(Paths.GetSessionDataPath(), "init.bmp");
-            Image resized = ImgUtils.ResizeImage(IoUtils.GetImage(path), targetSize.Width, targetSize.Height);
+            var resized = ImgUtils.ResizeImage(IoUtils.GetImage(path), targetSize.Width, targetSize.Height);
             resized.Save(outPath, System.Drawing.Imaging.ImageFormat.Bmp);
 
             if (print)
@@ -50,12 +50,12 @@ namespace StableDiffusionGui.Main
             char[] delimiters = new char[] { ' ', '\r', '\n' };
             int words = longest.Split(delimiters, StringSplitOptions.RemoveEmptyEntries).Length;
 
-            int thresh = 55;
+            const int thresh = 55;
 
             if (words > thresh)
                 UiUtils.ShowMessageBox($"{(prompts.Count > 1 ? "One of your prompts" : "Your prompt")} is very long (>{thresh} words).\n\nThe AI might ignore parts of your prompt. Shorten the prompt to avoid this.");
 
-            if(Config.GetBool("checkboxOptimizedSd") && prompts.Where(x => x.MatchesRegex(@"(?:(?!\[)(?:.|\n))*\[(?:(?!\])(?:.|\n))*\]")).Any())
+            if(Config.GetBool("checkboxOptimizedSd") && prompts.Any(x => x.MatchesRegex(@"(?:(?!\[)(?:.|\n))*\[(?:(?!\])(?:.|\n))*\]")))
                 UiUtils.ShowMessageBox($"{(prompts.Count > 1 ? "One of your prompts" : "Your prompt")} contains square brackets used for exclusion words.\n\nThis is currently not supported in Low Memory Mode.");
 
             if(MainUi.CurrentEmbeddingPath != null && MainUi.CurrentEmbeddingPath.ToLowerInvariant().EndsWith(".pt") && prompts.Any(x => !x.Contains("*")))
@@ -76,9 +76,7 @@ namespace StableDiffusionGui.Main
 
         public static void SoftCancelDreamPy()
         {
-            var childProcesses = OsUtils.GetChildProcesses(TtiProcess.CurrentProcess);
-
-            foreach (System.Diagnostics.Process p in childProcesses)
+            foreach (var p in OsUtils.GetChildProcesses(TtiProcess.CurrentProcess))
                 OsUtils.SendCtrlC(p.Id);
         }
 

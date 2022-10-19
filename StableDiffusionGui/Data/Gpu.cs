@@ -15,7 +15,7 @@ namespace StableDiffusionGui.Data
         {
             try
             {
-                var split = fromCheckGpusOutput.Split(" - ");
+                string[] split = fromCheckGpusOutput.Split(" - ");
                 CudaDeviceId = split[0].GetInt();
                 FullName = split[1].Trim();
                 VramGb = split[2].Trim().Split(' ')[0].GetFloat();

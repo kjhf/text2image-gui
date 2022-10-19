@@ -11,7 +11,7 @@ using DT = System.DateTime;
 
 namespace StableDiffusionGui.Main
 {
-    internal class Logger
+    internal static class Logger
     {
         public static TextBox Textbox;
         public static TextBox TextboxDebug;
@@ -53,7 +53,7 @@ namespace StableDiffusionGui.Main
 
         public static void ShowNext()
         {
-            if (logQueue.TryDequeue(out Entry entry))
+            if (logQueue.TryDequeue(out var entry))
                 Show(entry);
         }
 

@@ -24,11 +24,11 @@ namespace StableDiffusionGui.Forms
 
         private void DreamboothForm_Load(object sender, EventArgs e)
         {
-            bool is4090 = GpuUtils.CachedGpus.Where(x => x.FullName.Contains("RTX 4090")).Any();
-            _uiStrings.Add(TrainPreset.VeryHighQuality.ToString(), $"Very High Quality ({(is4090 ? "50 minutes on RTX 4090" : "80 minutes on RTX 3090")})");
-            _uiStrings.Add(TrainPreset.HighQuality.ToString(), $"High Quality ({(is4090 ? "25 minutes on RTX 4090" : "40 minutes on RTX 3090")})");
-            _uiStrings.Add(TrainPreset.MedQuality.ToString(), $"Medium Quality ({(is4090 ? "12 minutes on RTX 4090" : "20 minutes on RTX 3090")})");
-            _uiStrings.Add(TrainPreset.LowQuality.ToString(), $"Low Quality, for Testing ({(is4090 ? "4 minutes on RTX 4090" : "6 minutes on RTX 3090")})");
+            bool is4090 = GpuUtils.CachedGpus.Any(x => x.FullName.Contains("RTX 4090"));
+            _uiStrings.Add(nameof(TrainPreset.VeryHighQuality), $"Very High Quality ({(is4090 ? "50 minutes on RTX 4090" : "80 minutes on RTX 3090")})");
+            _uiStrings.Add(nameof(TrainPreset.HighQuality), $"High Quality ({(is4090 ? "25 minutes on RTX 4090" : "40 minutes on RTX 3090")})");
+            _uiStrings.Add(nameof(TrainPreset.MedQuality), $"Medium Quality ({(is4090 ? "12 minutes on RTX 4090" : "20 minutes on RTX 3090")})");
+            _uiStrings.Add(nameof(TrainPreset.LowQuality), $"Low Quality, for Testing ({(is4090 ? "4 minutes on RTX 4090" : "6 minutes on RTX 3090")})");
 
             comboxTrainPreset.FillFromEnum<TrainPreset>(_uiStrings, 0);
             LoadModels();
@@ -63,7 +63,7 @@ namespace StableDiffusionGui.Forms
                     valid = false;
                 }
 
-                Data.Gpu gpu = cudaDeviceOpt == (int)Enums.Cuda.Device.Automatic ? gpus[0] : gpus[cudaDeviceOpt - 2];
+                var gpu = cudaDeviceOpt == (int)Enums.Cuda.Device.Automatic ? gpus[0] : gpus[cudaDeviceOpt - 2];
 
                 if (valid && gpu.VramGb < 23f)
                 {
@@ -135,7 +135,7 @@ namespace StableDiffusionGui.Forms
                 return;
             }
 
-            FileInfo baseModel = Paths.GetModel(comboxBaseModel.Text);
+            var baseModel = Paths.GetModel(comboxBaseModel.Text);
 
             if (baseModel == null)
             {

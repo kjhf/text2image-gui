@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace StableDiffusionGui.Main
 {
-    internal class ArgsDreamPy
+    internal static class ArgsDreamPy
     {
         public static string GetPrecisionArg()
         {
@@ -48,7 +48,7 @@ namespace StableDiffusionGui.Main
 
         public static string GetFaceRestoreArgs()
         {
-            var faceRestoreOpt = (Forms.PostProcSettingsForm.FaceRestoreOption)Config.GetInt("comboxFaceRestoration");
+            Forms.PostProcSettingsForm.FaceRestoreOption faceRestoreOpt = (Forms.PostProcSettingsForm.FaceRestoreOption)Config.GetInt("comboxFaceRestoration");
 
             if (faceRestoreOpt == Forms.PostProcSettingsForm.FaceRestoreOption.Disabled)
                 return "";
@@ -70,7 +70,7 @@ namespace StableDiffusionGui.Main
 
         public static string GetUpscaleArgs ()
         {
-            var upscaleSetting = (Forms.PostProcSettingsForm.UpscaleOption)Config.GetInt("comboxUpscale");
+            Forms.PostProcSettingsForm.UpscaleOption upscaleSetting = (Forms.PostProcSettingsForm.UpscaleOption)Config.GetInt("comboxUpscale");
 
             if (upscaleSetting == Forms.PostProcSettingsForm.UpscaleOption.Disabled)
                 return "";

@@ -73,8 +73,8 @@ namespace StableDiffusionGui.Forms
         {
             try
             {
-                FileInfo model1 = Paths.GetModel(comboxModel1.Text);
-                FileInfo model2 = Paths.GetModel(comboxModel2.Text);
+                var model1 = Paths.GetModel(comboxModel1.Text);
+                var model2 = Paths.GetModel(comboxModel2.Text);
 
                 Logger.ClearLogBox();
                 Logger.Log($"Merging models '{Path.GetFileNameWithoutExtension(model1.Name)}' ({PercentModel1}%) and '{Path.GetFileNameWithoutExtension(model2.Name)}' ({PercentModel2}%)...");
@@ -82,14 +82,14 @@ namespace StableDiffusionGui.Forms
                 string filename = $"{Path.GetFileNameWithoutExtension(model1.Name)}-{PercentModel1}-with-{Path.GetFileNameWithoutExtension(model2.Name)}-{PercentModel2}{model1.Extension}";
                 string outPath = Path.Combine(model1.Directory.FullName, filename);
 
-                Process p = OsUtils.NewProcess(!OsUtils.ShowHiddenCmd());
+                var p = OsUtils.NewProcess(!OsUtils.ShowHiddenCmd());
                 p.StartInfo.Arguments = $"{OsUtils.GetCmdArg()} cd /D {Paths.GetDataPath().Wrap()} && {TtiUtils.GetEnvVarsSd()} && call activate.bat mb/envs/ldo && " +
                     $"python {Constants.Dirs.RepoSd}/scripts/merge_models.py -1 {model1.FullName.Wrap()} -2 {model2.FullName.Wrap()} -w {(PercentModel2 / 100f).ToStringDot("0.0000")} -o {outPath.Wrap(true)}";
 
                 if (!OsUtils.ShowHiddenCmd())
                 {
-                    p.OutputDataReceived += (sender, line) => { Logger.Log(line?.Data, true, false, Constants.Lognames.Merge); };
-                    p.ErrorDataReceived += (sender, line) => { Logger.Log(line?.Data, true, false, Constants.Lognames.Merge); };
+                    p.OutputDataReceived += (sender, line) => Logger.Log(line?.Data, true, false, Constants.Lognames.Merge);
+                    p.ErrorDataReceived += (sender, line) => Logger.Log(line?.Data, true, false, Constants.Lognames.Merge);
                 }
 
                 Logger.Log($"cmd {p.StartInfo.Arguments}", true);

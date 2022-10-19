@@ -68,7 +68,7 @@ namespace Nmkoder.Forms
             }
 
             textLabel.MaximumSize = new Size(Program.MainForm.Size.Width - 30, Program.MainForm.Size.Height - 50);
-            Size labelSize = GetLabelSize(textLabel);
+            var labelSize = GetLabelSize(textLabel);
             Size = new Size((labelSize.Width + 60).Clamp(360, Program.MainForm.Size.Width), (labelSize.Height + 120).Clamp(200, Program.MainForm.Size.Height));
 
             CenterToScreen();

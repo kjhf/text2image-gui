@@ -1,15 +1,13 @@
-﻿using StableDiffusionGui.Data;
-using StableDiffusionGui.Io;
-using StableDiffusionGui.Main;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using StableDiffusionGui.Data;
+using StableDiffusionGui.Io;
+using StableDiffusionGui.Main;
 
 namespace StableDiffusionGui.Os
 {
-    internal class GpuUtils
+    internal static class GpuUtils
     {
         public static List<Gpu> CachedGpus = new List<Gpu>();
 
@@ -34,7 +32,7 @@ namespace StableDiffusionGui.Os
 
             List<string> outLines = new List<string>();
 
-            Process p = OsUtils.NewProcess(!OsUtils.ShowHiddenCmd());
+            var p = OsUtils.NewProcess(!OsUtils.ShowHiddenCmd());
             p.StartInfo.Arguments = $"{OsUtils.GetCmdArg()} cd /D {Paths.GetDataPath().Wrap()} && {TtiUtils.GetEnvVarsSd(true)} && call activate.bat mb/envs/ldo && python {Constants.Dirs.RepoSd}/scripts/check_gpus.py";
 
             if (!OsUtils.ShowHiddenCmd())

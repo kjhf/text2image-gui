@@ -17,11 +17,11 @@ namespace StableDiffusionGui.Forms
 
         public PostProcSettingsForm()
         {
-            UiStrings.Add(UpscaleOption.X2.ToString(), "2x");
-            UiStrings.Add(UpscaleOption.X3.ToString(), "3x");
-            UiStrings.Add(UpscaleOption.X4.ToString(), "4x");
-            UiStrings.Add(FaceRestoreOption.Gfpgan.ToString(), "GFPGAN");
-            UiStrings.Add(FaceRestoreOption.CodeFormer.ToString(), "CodeFormer");
+            UiStrings.Add(nameof(UpscaleOption.X2), "2x");
+            UiStrings.Add(nameof(UpscaleOption.X3), "3x");
+            UiStrings.Add(nameof(UpscaleOption.X4), "4x");
+            UiStrings.Add(nameof(FaceRestoreOption.Gfpgan), "GFPGAN");
+            UiStrings.Add(nameof(FaceRestoreOption.CodeFormer), "CodeFormer");
 
             InitializeComponent();
         }
@@ -40,7 +40,7 @@ namespace StableDiffusionGui.Forms
 
             if (!InstallationStatus.HasSdUpscalers())
             {
-                DialogResult dialogResult = UiUtils.ShowMessageBox("Upscalers are not installed.\nDo you want to open the installer to install them (Up to 1 GB of disk space required)?", "Error", MessageBoxButtons.YesNo);
+                var dialogResult = UiUtils.ShowMessageBox("Upscalers are not installed.\nDo you want to open the installer to install them (Up to 1 GB of disk space required)?", "Error", MessageBoxButtons.YesNo);
 
                 if (dialogResult == DialogResult.Yes)
                     new InstallerForm().ShowDialog();

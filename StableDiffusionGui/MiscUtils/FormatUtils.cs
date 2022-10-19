@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 
 namespace StableDiffusionGui.MiscUtils
 {
-    internal class FormatUtils
+    internal static class FormatUtils
     {
         public static string Bytes(long sizeBytes)
         {

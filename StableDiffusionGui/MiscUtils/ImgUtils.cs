@@ -1,30 +1,29 @@
-﻿using ImageMagick;
-using StableDiffusionGui.Io;
-using System;
+﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
 using System.Threading.Tasks;
+using ImageMagick;
+using StableDiffusionGui.Io;
 
 namespace StableDiffusionGui.MiscUtils
 {
-    internal class ImgUtils
+    internal static class ImgUtils
     {
         public static MagickImage MagickImgFromImage(Image img)
         {
             return MagickImgFromImage(img as Bitmap);
         }
 
-        public static MagickImage MagickImgFromImage (Bitmap bmp)
+        public static MagickImage MagickImgFromImage(Bitmap bmp)
         {
-            var m = new MagickFactory();
-            MagickImage image = new MagickImage(m.Image.Create(bmp));
-            return image;
+            MagickFactory m = new MagickFactory();
+            return new MagickImage(m.Image.Create(bmp));
         }
 
         public static Image ImageFromMagickImg(MagickImage img)
         {
-            using (var stream = new MemoryStream())
+            using (MemoryStream stream = new MemoryStream())
             {
                 img.Write(stream);
                 return new Bitmap(stream);
@@ -48,26 +47,26 @@ namespace StableDiffusionGui.MiscUtils
             }
         }
 
-        public static Image Negate (Image image)
+        public static Image Negate(Image image)
         {
-            MagickImage magickImage = MagickImgFromImage(image);
+            var magickImage = MagickImgFromImage(image);
             magickImage.Negate();
             return ImageFromMagickImg(magickImage);
         }
 
-        public static MagickImage AlphaMask (MagickImage image, MagickImage mask, bool invert)
+        public static MagickImage AlphaMask(MagickImage image, MagickImage mask, bool invert)
         {
-            if(invert)
+            if (invert)
                 mask.Negate();
 
             image.Composite(mask, CompositeOperator.CopyAlpha);
             return image;
         }
 
-        public static void Overlay (string path, string overlayImg, bool matchSize = true)
+        public static void Overlay(string path, string overlayImg, bool matchSize = true)
         {
-            Image imgBase = IoUtils.GetImage(path);
-            Image imgOverlay = IoUtils.GetImage(overlayImg);
+            var imgBase = IoUtils.GetImage(path);
+            var imgOverlay = IoUtils.GetImage(overlayImg);
             Overlay(imgBase, imgOverlay, matchSize).Save(path);
         }
 
@@ -87,7 +86,8 @@ namespace StableDiffusionGui.MiscUtils
             return img;
         }
 
-        public enum ScaleMode { Percentage, Height, Width, LongerSide, ShorterSide }
+        public enum ScaleMode
+        { Percentage, Height, Width, LongerSide, ShorterSide }
 
         public static async Task<MagickImage> Scale(string path, ScaleMode mode, float targetScale, bool write)
         {
@@ -95,7 +95,7 @@ namespace StableDiffusionGui.MiscUtils
             return await Scale(img, mode, targetScale, write);
         }
 
-        public static async Task<MagickImage> Scale(MagickImage img, ScaleMode mode, float targetScale, bool write)
+        public static Task<MagickImage> Scale(MagickImage img, ScaleMode mode, float targetScale, bool write)
         {
             img.FilterType = FilterType.Mitchell;
 
@@ -124,11 +124,11 @@ namespace StableDiffusionGui.MiscUtils
             {
                 img.Write(img.FileName);
                 img.Dispose();
-                return null;
+                return Task.FromResult((MagickImage)null);
             }
             else
             {
-                return img;
+                return Task.FromResult(img);
             }
         }
 
@@ -138,7 +138,7 @@ namespace StableDiffusionGui.MiscUtils
             return await Pad(img, newSize, write, fillColor);
         }
 
-        public static async Task<MagickImage> Pad(MagickImage img, Size newSize, bool write, MagickColor fillColor = null)
+        public static Task<MagickImage> Pad(MagickImage img, Size newSize, bool write, MagickColor fillColor = null)
         {
             img.BackgroundColor = fillColor ?? MagickColors.Black;
             img.Extent(newSize.Width, newSize.Height, Gravity.Center);
@@ -148,11 +148,11 @@ namespace StableDiffusionGui.MiscUtils
             {
                 img.Write(img.FileName);
                 img.Dispose();
-                return null;
+                return Task.FromResult((MagickImage)null);
             }
             else
             {
-                return img;
+                return Task.FromResult(img);
             }
         }
     }

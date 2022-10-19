@@ -1,8 +1,8 @@
 ﻿namespace StableDiffusionGui.Main
 {
-    public class Constants
+    public static class Constants
     {
-        public class Lognames
+        public static class Lognames
         {
             public const string Session = "sessionlog";
             public const string Installer = "installer";
@@ -12,20 +12,20 @@
             public const string Dreambooth = "dreambooth";
         }
 
-        public class Dirs
+        public static class Dirs
         {
             public const string Bins = "bin";
             public const string RepoSd = "repo";
             public const string Dreambooth = "db";
         }
 
-        public class Bins
+        public static class Bins
         {
             public const string WindowsKill = "wkl";
             public const string OrphanHitman = "ok";
         }
 
-        public class Files
+        public static class Files
         {
             public const string Config = "config.json";
         }

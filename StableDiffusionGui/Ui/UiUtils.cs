@@ -1,20 +1,19 @@
-﻿using Nmkoder.Forms;
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
+using Nmkoder.Forms;
 
 namespace StableDiffusionGui.Ui
 {
-    internal class UiUtils
+    internal static class UiUtils
     {
-        public enum MessageType { Message, Warning, Error };
+        public enum MessageType
+        { Message, Warning, Error };
 
         public static DialogResult ShowMessageBox(string text, MessageType type = MessageType.Message, MessageForm.FontSize fontSize = MessageForm.FontSize.Normal)
         {
-            MessageBoxIcon icon = MessageBoxIcon.Information;
-            if (type == MessageType.Warning) icon = MessageBoxIcon.Warning;
-            else if (type == MessageType.Error) icon = MessageBoxIcon.Error;
-
-            MessageForm form = new MessageForm(text, $"{type}");
-            form.MsgFontSize = fontSize;
+            MessageForm form = new MessageForm(text, $"{type}")
+            {
+                MsgFontSize = fontSize
+            };
             form.ShowDialog();
             return DialogResult.OK;
         }

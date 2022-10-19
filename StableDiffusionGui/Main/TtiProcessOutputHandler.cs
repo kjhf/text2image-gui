@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace StableDiffusionGui.Main
 {
-    internal class TtiProcessOutputHandler
+    internal static class TtiProcessOutputHandler
     {
         private static bool _hasErrored = false;
 
@@ -48,7 +48,7 @@ namespace StableDiffusionGui.Main
 
                 if (line.Contains("image(s) generated in "))
                 {
-                    var split = line.Split("image(s) generated in ");
+                    string[] split = line.Split("image(s) generated in ");
                     TextToImage.CurrentTask.ImgCount += split[0].GetInt();
                     Program.MainForm.SetProgress((int)Math.Round(((float)TextToImage.CurrentTask.ImgCount / TextToImage.CurrentTask.TargetImgCount) * 100f));
 
@@ -79,7 +79,7 @@ namespace StableDiffusionGui.Main
 
                 if (line.MatchesWildcard("*data: 100%*<00:00,*it*]"))
                 {
-                    TextToImage.CurrentTask.ImgCount += 1;
+                    TextToImage.CurrentTask.ImgCount++;
                     Program.MainForm.SetProgress((int)Math.Round(((float)TextToImage.CurrentTask.ImgCount / TextToImage.CurrentTask.TargetImgCount) * 100f));
 
                     int lastMsPerImg = line.EndsWith("it/s]") ? (1000000f / (line.Split("00:00, ").Last().Remove(".").Remove("s") + "0").GetInt()).RoundToInt() : (line.Split("00:00, ").Last().Remove(".").Remove("s") + "0").GetInt();
@@ -93,7 +93,7 @@ namespace StableDiffusionGui.Main
             }
 
 
-            if (line.MatchesWildcard("*%|*/*[*B/s]*") && !line.ToLower().Contains("it/s") && !line.ToLower().Contains("s/it"))
+            if (line.MatchesWildcard("*%|*/*[*B/s]*") && !(line.IndexOf("it/s", StringComparison.OrdinalIgnoreCase) >= 0) && !(line.IndexOf("s/it", StringComparison.OrdinalIgnoreCase) >= 0))
             {
                 Logger.Log($"Downloading required files... {line.Trunc(80)}", false, ellipsis);
             }
@@ -126,7 +126,7 @@ namespace StableDiffusionGui.Main
                 UiUtils.ShowMessageBox($"Invalid CLI syntax.", UiUtils.MessageType.Error);
             }
 
-            if (!_hasErrored && line.ToLower().Contains("illegal memory access"))
+            if (!_hasErrored && line.IndexOf("illegal memory access", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 _hasErrored = true;
                 UiUtils.ShowMessageBox($"Your GPU appears to be unstable! If you have an overclock enabled, please disable it!\n\n{line}", UiUtils.MessageType.Error);

@@ -1,25 +1,23 @@
-﻿using StableDiffusionGui.Io;
-using StableDiffusionGui.MiscUtils;
-using StableDiffusionGui.Os;
-using StableDiffusionGui.Ui;
-using System;
-using System.Diagnostics;
+﻿using System;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using StableDiffusionGui.Io;
+using StableDiffusionGui.MiscUtils;
+using StableDiffusionGui.Os;
+using StableDiffusionGui.Ui;
 
 namespace StableDiffusionGui.Main
 {
-    internal class Dreambooth
+    internal static class Dreambooth
     {
-        static readonly string[] _validImgExtensions = new string[] { ".png", ".jpeg", ".jpg", ".jfif", ".bmp", ".webp" };
-        static readonly bool _useVisibleCmdWindow = false;
-        static readonly bool _onlySaveFinalCkpt = true;
-        static readonly float _learningRateMagicNumber = 0.18f;
+        private static readonly string[] _validImgExtensions = new string[] { ".png", ".jpeg", ".jpg", ".jfif", ".bmp", ".webp" };
+        private static readonly bool _useVisibleCmdWindow = false;
+        private static readonly bool _onlySaveFinalCkpt = true;
+        private static readonly float _learningRateMagicNumber = 0.18f;
 
         public static int CurrentTargetSteps;
 
@@ -50,7 +48,7 @@ namespace StableDiffusionGui.Main
 
                 string outPath = Path.Combine(Paths.GetModelsPath(), $"dreambooth-{className}-{CurrentTargetSteps}step-{timestamp}.ckpt");
 
-                Process db = OsUtils.NewProcess(!showCmd);
+                var db = OsUtils.NewProcess(!showCmd);
                 db.StartInfo.Arguments = $"{OsUtils.GetCmdArg()} cd /D {Paths.GetDataPath().Wrap()} && {TtiUtils.GetEnvVarsSd()} && call activate.bat mb/envs/ldo && python {Constants.Dirs.RepoSd}/db/main.py -t " +
                     $"--base {configPath.Wrap(true)} " +
                     $"--actual_resume {baseModel.FullName.Wrap(true)} " +
@@ -64,8 +62,8 @@ namespace StableDiffusionGui.Main
 
                 if (!showCmd)
                 {
-                    db.OutputDataReceived += (sender, line) => { DreamboothOutputHandler.Log(line?.Data); };
-                    db.ErrorDataReceived += (sender, line) => { DreamboothOutputHandler.Log(line?.Data, true); };
+                    db.OutputDataReceived += (sender, line) => DreamboothOutputHandler.Log(line?.Data);
+                    db.ErrorDataReceived += (sender, line) => DreamboothOutputHandler.Log(line?.Data, true);
                 }
 
                 Logger.Log($"Starting training on GPU {cudaId}.\nLog Folder: {logDir.Remove(Paths.GetExeDir())}\nLoading...");
@@ -95,14 +93,16 @@ namespace StableDiffusionGui.Main
                 Logger.Log(ex.StackTrace, true);
                 return "";
             }
-
-            Program.MainForm.SetProgress(0);
+            finally
+            {
+                Program.MainForm.SetProgress(0);
+            }
         }
 
-        private static async Task<string> WriteConfig (string logDir, DirectoryInfo trainDir, Enums.Dreambooth.TrainPreset preset, float userlrMult)
+        private static async Task<string> WriteConfig(string logDir, DirectoryInfo trainDir, Enums.Dreambooth.TrainPreset preset, float userlrMult)
         {
             string configPath = Path.Combine(Paths.GetDataPath(), Constants.Dirs.RepoSd, Constants.Dirs.Dreambooth, "configs", "stable-diffusion", "v1-finetune_unfrozen.yaml");
-            var configLines = File.ReadAllLines(configPath).ToArray();
+            string[] configLines = File.ReadAllLines(configPath).ToArray();
 
             var values = GetStepsAndLoggerIntervalAndLrMultiplier(preset);
             int targetSteps = values.Item1;
@@ -112,7 +112,7 @@ namespace StableDiffusionGui.Main
             CurrentTargetSteps = targetSteps;
 
             var filesInTrainDir = IoUtils.GetFileInfosSorted(trainDir.FullName, false, "*.*");
-            int trainImgs = filesInTrainDir.Where(x => _validImgExtensions.Contains(x.Extension.ToLower())).Count();
+            int trainImgs = filesInTrainDir.Count(x => _validImgExtensions.Contains(x.Extension.ToLower()));
 
             if (trainImgs < 1)
             {
@@ -122,12 +122,12 @@ namespace StableDiffusionGui.Main
 
             var validateResult1Valid2ContainsFixable = await ValidateImages(trainDir.FullName);
 
-            if(!validateResult1Valid2ContainsFixable.Item1)
+            if (!validateResult1Valid2ContainsFixable.Item1)
             {
                 if (validateResult1Valid2ContainsFixable.Item2)
                 {
-                    DialogResult dialogResult = UiUtils.ShowMessageBox($"Your training folder contains files in the correct format, but they need to be resized.\n" +
-                    $"Do you want to do this automatically now? The files will be overwritten!", UiUtils.MessageType.Warning.ToString(), MessageBoxButtons.YesNo);
+                    var dialogResult = UiUtils.ShowMessageBox($"Your training folder contains files in the correct format, but they need to be resized.\n" +
+                    $"Do you want to do this automatically now? The files will be overwritten!", nameof(UiUtils.MessageType.Warning), MessageBoxButtons.YesNo);
 
                     if (dialogResult == DialogResult.Yes)
                     {
@@ -148,7 +148,7 @@ namespace StableDiffusionGui.Main
                 }
             }
 
-            // 
+            //
             // if (filesInTrainDir.Count() > trainImgs)
             // {
             //     Logger.Log($"Error: Training folder contains invalid files. Currently supported are {string.Join(", ", _validImgExtensions.Select(x => x.Substring(1).ToUpperInvariant()))}.");
@@ -171,10 +171,10 @@ namespace StableDiffusionGui.Main
             return configOutPath;
         }
 
-        private static Tuple<int, int, float> GetStepsAndLoggerIntervalAndLrMultiplier (Enums.Dreambooth.TrainPreset preset)
+        private static Tuple<int, int, float> GetStepsAndLoggerIntervalAndLrMultiplier(Enums.Dreambooth.TrainPreset preset)
         {
             if (preset == Enums.Dreambooth.TrainPreset.VeryHighQuality)
-                return new Tuple<int, int, float> (4000, 1000, 1f);
+                return new Tuple<int, int, float>(4000, 1000, 1f);
 
             if (preset == Enums.Dreambooth.TrainPreset.HighQuality)
                 return new Tuple<int, int, float>(2000, 500, 2f);
@@ -188,14 +188,14 @@ namespace StableDiffusionGui.Main
         }
 
         /// <returns> Bool1: All Valid - Bool2: Contains fixable images </returns>
-        public static async Task<Tuple<bool, bool>> ValidateImages (string dir)
+        public static Task<Tuple<bool, bool>> ValidateImages(string dir)
         {
-            var files = IoUtils.GetFileInfosSorted(dir, false, "*.*").Where(x => _validImgExtensions.Contains(x.Extension.ToLower())).ToList();
+            System.Collections.Generic.List<FileInfo> files = IoUtils.GetFileInfosSorted(dir, false, "*.*").Where(x => _validImgExtensions.Contains(x.Extension.ToLower())).ToList();
 
             bool allValid = true;
             bool containsFixableImages = false;
 
-            foreach(var file in files)
+            foreach (var file in files)
             {
                 // Check extension
                 if (!_validImgExtensions.Contains(file.Extension.ToLowerInvariant()))
@@ -234,22 +234,23 @@ namespace StableDiffusionGui.Main
                 }
             }
 
-            return new Tuple<bool, bool> (allValid, containsFixableImages);
+            return Task.FromResult(new Tuple<bool, bool>(allValid, containsFixableImages));
         }
 
-        public static async Task FormatImages (string dir)
+        public static async Task FormatImages(string dir)
         {
-            var files = IoUtils.GetFileInfosSorted(dir, false, "*.*").Where(x => _validImgExtensions.Contains(x.Extension.ToLower())).ToList();
+            System.Collections.Generic.List<FileInfo> files = IoUtils.GetFileInfosSorted(dir, false, "*.*").Where(x => _validImgExtensions.Contains(x.Extension.ToLower())).ToList();
 
-            var opts = new ParallelOptions { MaxDegreeOfParallelism = (Environment.ProcessorCount / 2f).RoundToInt().Clamp(1, 12) }; // Thread count = Half the threads on this CPU, clamped to 1-12 (should be plenty for this...)
+            ParallelOptions opts = new ParallelOptions { MaxDegreeOfParallelism = (Environment.ProcessorCount / 2f).RoundToInt().Clamp(1, 12) }; // Thread count = Half the threads on this CPU, clamped to 1-12 (should be plenty for this...)
             int count = 0;
 
-            Task imageProcessingTask = Task.Run(async () => Parallel.ForEach(files, opts, async file => {
+            Task imageProcessingTask = Task.Run(() => Task.FromResult(Parallel.ForEach(files, opts, async file =>
+            {
                 var scaledImg = await ImgUtils.Scale(file.FullName, ImgUtils.ScaleMode.LongerSide, 512, false);
                 await ImgUtils.Pad(scaledImg, new Size(512, 512), true);
                 int currentCount = Interlocked.Increment(ref count);
                 Logger.Log($"Processed {currentCount}/{files.Count} images...", false, Logger.LastUiLine.EndsWith("..."));
-            }));
+            })));
 
             Logger.Log($"Processed {files.Count} images.", false, Logger.LastUiLine.EndsWith("..."));
 

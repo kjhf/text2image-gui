@@ -234,7 +234,7 @@ namespace StableDiffusionGui
         public static string TrimWhitespaces(this string str)
         {
             if (str == null) return str;
-            var newString = new StringBuilder();
+            StringBuilder newString = new StringBuilder();
             bool previousIsWhitespace = false;
             for (int i = 0; i < str.Length; i++)
             {

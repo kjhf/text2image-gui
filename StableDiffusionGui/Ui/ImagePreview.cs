@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace StableDiffusionGui.Ui
 {
-    internal class ImagePreview
+    internal static class ImagePreview
     {
         public enum ImgShowMode { DontShow, ShowFirst, ShowLast }
 
@@ -27,7 +27,7 @@ namespace StableDiffusionGui.Ui
         /// <returns> The amount of images shown </returns>
         public static int SetImages(string imagesDir, ImgShowMode showMode, int amount = -1, string pattern = "*.png", bool recursive = false)
         {
-            var imgPaths = IoUtils.GetFileInfosSorted(imagesDir, recursive, pattern).OrderBy(x => x.CreationTime).Reverse().ToList(); // Find images and sort by date, newest to oldest
+            List<FileInfo> imgPaths = IoUtils.GetFileInfosSorted(imagesDir, recursive, pattern).OrderBy(x => x.CreationTime).Reverse().ToList(); // Find images and sort by date, newest to oldest
 
             if (amount > 0)
                 imgPaths = imgPaths.Take(amount).ToList();
@@ -71,7 +71,7 @@ namespace StableDiffusionGui.Ui
             Program.MainForm.PictBoxImgViewer.Image = IoUtils.GetImage(_currentImages[_currIndex]);
             ImagePopup.UpdateSlideshow(Program.MainForm.PictBoxImgViewer.Image);
 
-            ImageMetadata meta = CurrentImageMetadata;
+            var meta = CurrentImageMetadata;
 
             List<string> infos = new List<string>();
 
@@ -106,14 +106,14 @@ namespace StableDiffusionGui.Ui
 
             if (!previous)
             {
-                _currIndex += 1;
+                _currIndex++;
 
                 if (_currIndex >= _currentImages.Length)
                     _currIndex = 0;
             }
             else
             {
-                _currIndex -= 1;
+                _currIndex--;
 
                 if (_currIndex < 0)
                     _currIndex = _currentImages.Length - 1;

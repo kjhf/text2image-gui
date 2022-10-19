@@ -33,12 +33,12 @@ namespace StableDiffusionGui
 
         public static void Cleanup()
         {
-            int keepLogsDays = 4;
-            int keepSessionDataDays = 4;
+            const int keepLogsDays = 4;
+            const int keepSessionDataDays = 4;
 
             try
             {
-                foreach (DirectoryInfo dir in new DirectoryInfo(Paths.GetLogPath(true)).GetDirectories())
+                foreach (var dir in new DirectoryInfo(Paths.GetLogPath(true)).GetDirectories())
                 {
                     string[] split = dir.Name.Split('-');
                     int daysOld = (DateTime.Now - new DateTime(split[0].GetInt(), split[1].GetInt(), split[2].GetInt())).Days;
@@ -53,7 +53,7 @@ namespace StableDiffusionGui
 
                 IoUtils.DeleteContentsOfDir(Paths.GetSessionDataPath()); // Clear this session's temp files...
 
-                foreach (DirectoryInfo dir in new DirectoryInfo(Paths.GetSessionsPath()).GetDirectories())
+                foreach (var dir in new DirectoryInfo(Paths.GetSessionsPath()).GetDirectories())
                 {
                     string[] split = dir.Name.Split('-');
                     int daysOld = (DateTime.Now - new DateTime(split[0].GetInt(), split[1].GetInt(), split[2].GetInt())).Days;

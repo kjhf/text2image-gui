@@ -1,22 +1,22 @@
-﻿using LibGit2Sharp;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using LibGit2Sharp;
 using StableDiffusionGui.Io;
 using StableDiffusionGui.Main;
 using StableDiffusionGui.MiscUtils;
 using StableDiffusionGui.Os;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace StableDiffusionGui.Installation
 {
-    internal class Setup
+    internal static class Setup
     {
         public static readonly string GitFile = "n00mkrad/stable-diffusion-cust.git";
 
-        private static bool ReplaceUiLogLine { get { return Logger.LastUiLine.EndsWith("..."); } }
+        private static bool ReplaceUiLogLine
+        { get { return Logger.LastUiLine.EndsWith("..."); } }
 
         public static async Task Install(bool force = false)
         {
@@ -40,7 +40,6 @@ namespace StableDiffusionGui.Installation
                         Logger.Log("Install: Downloading model file because there is none.", true, false, Constants.Lognames.Installer);
 
                     await DownloadSdModelFile();
-
                 }
 
                 if (force || !InstallationStatus.HasSdUpscalers())
@@ -101,12 +100,12 @@ namespace StableDiffusionGui.Installation
 
             Logger.Log("Running python environment installation script...");
 
-            Process p = OsUtils.NewProcess(!OsUtils.ShowHiddenCmd(), batPath);
+            var p = OsUtils.NewProcess(!OsUtils.ShowHiddenCmd(), batPath);
 
             if (!OsUtils.ShowHiddenCmd())
             {
-                p.OutputDataReceived += (sender, line) => { HandleInstallScriptOutput(line.Data, false); };
-                p.ErrorDataReceived += (sender, line) => { HandleInstallScriptOutput(line.Data, true); };
+                p.OutputDataReceived += (sender, line) => HandleInstallScriptOutput(line.Data, false);
+                p.ErrorDataReceived += (sender, line) => HandleInstallScriptOutput(line.Data, true);
             }
 
             p.Start();
@@ -134,7 +133,7 @@ namespace StableDiffusionGui.Installation
 
             if (log.EndsWith("%") && log.Contains(" | "))
             {
-                var split = log.Split(" | ");
+                string[] split = log.Split(" | ");
                 Logger.Log($"Installing {split.First().Trim()} ({split.Last().Trim()})", false, Logger.LastUiLine.EndsWith("%)"));
             }
         }
@@ -142,7 +141,7 @@ namespace StableDiffusionGui.Installation
         public static async Task DownloadSdModelFile(bool force = false)
         {
             string mdlPath = Path.Combine(Paths.GetModelsPath(), "stable-diffusion-1.4.ckpt");
-            bool hasModel = IoUtils.GetFileInfosSorted(Paths.GetModelsPath(), false, "*.ckpt").Where(x => x.Length == 4265380512).Any();
+            bool hasModel = IoUtils.GetFileInfosSorted(Paths.GetModelsPath(), false, "*.ckpt").Any(x => x.Length == 4265380512);
 
             if (hasModel && !force)
             {
@@ -153,7 +152,7 @@ namespace StableDiffusionGui.Installation
             IoUtils.TryDeleteIfExists(mdlPath);
             Logger.Log("Downloading model file...");
 
-            Process p = OsUtils.NewProcess(true);
+            var p = OsUtils.NewProcess(true);
             p.ErrorDataReceived += (sender, line) => { try { Logger.Log($"Downloading... ({line.Data.Trim().Split(' ')[0]}%)", false, Logger.LastUiLine.EndsWith("%)"), Constants.Lognames.Installer); } catch { } };
             p.StartInfo.Arguments = $"/C curl -k \"https://www.googleapis.com/storage/v1/b/aai-blog-files/o/sd-v1-4.ckpt?alt=media\" -o {mdlPath.Wrap()}";
             p.Start();
@@ -187,14 +186,14 @@ namespace StableDiffusionGui.Installation
                     Directory.Delete(dir, true);
                 }
 
-                Task t = Task.Run(() => { Repository.Clone(url, dir, new CloneOptions() { BranchName = "main" }); });
+                Task t = Task.Run(() => Repository.Clone(url, dir, new CloneOptions() { BranchName = "main" }));
 
                 while (!t.IsCompleted)
                     await Task.Delay(1);
 
                 if (!string.IsNullOrWhiteSpace(commit))
                 {
-                    using (var localRepo = new Repository(dir))
+                    using (Repository localRepo = new Repository(dir))
                     {
                         var localCommit = localRepo.Lookup<Commit>(commit);
                         Commands.Checkout(localRepo, localCommit);
@@ -233,7 +232,7 @@ namespace StableDiffusionGui.Installation
             IoUtils.GetFilesSorted(srcPath, true, "*.ipynb").ToList().ForEach(x => IoUtils.TryDeleteIfExists(x));
         }
 
-        #endregion
+        #endregion Git
 
         #region Upscaling Models
 
@@ -249,12 +248,12 @@ namespace StableDiffusionGui.Installation
                 if (Directory.Exists(gfpganPath))
                     Directory.Delete(gfpganPath, true);
 
-                Task t = Task.Run(() => { Repository.Clone(@"https://github.com/TencentARC/GFPGAN.git", gfpganPath, new CloneOptions() { BranchName = "master" }); });
+                Task t = Task.Run(() => Repository.Clone(@"https://github.com/TencentARC/GFPGAN.git", gfpganPath, new CloneOptions() { BranchName = "master" }));
 
                 while (!t.IsCompleted)
                     await Task.Delay(1);
 
-                using (var localRepo = new Repository(gfpganPath))
+                using (Repository localRepo = new Repository(gfpganPath))
                 {
                     var localCommit = localRepo.Lookup<Commit>("2eac2033893ca7f427f4035d80fe95b92649ac56");
                     Commands.Checkout(localRepo, localCommit);
@@ -263,7 +262,7 @@ namespace StableDiffusionGui.Installation
                 if (print) Logger.Log("Downloading GFPGAN model file...", ReplaceUiLogLine);
                 string gfpGanMdlPath = Path.Combine(gfpganPath, "gfpgan.pth");
                 IoUtils.TryDeleteIfExists(gfpGanMdlPath);
-                Process procGfpganDl = OsUtils.NewProcess(true);
+                var procGfpganDl = OsUtils.NewProcess(true);
                 procGfpganDl.ErrorDataReceived += (sender, line) => { try { Logger.Log($"Downloading GFPGAN model ({line.Data.Trim().Split(' ')[0].GetInt()}%)...", false, ReplaceUiLogLine, Constants.Lognames.Installer); } catch { } };
                 procGfpganDl.StartInfo.Arguments = $"/C curl -k -L \"https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.4.pth\" -o {gfpGanMdlPath.Wrap()}";
                 procGfpganDl.Start();
@@ -276,7 +275,7 @@ namespace StableDiffusionGui.Installation
                 if (print) Logger.Log("Downloading Codeformer model file...", ReplaceUiLogLine);
                 string codeformerMdlPath = Path.Combine(codeformerPath, "codeformer.pth");
                 IoUtils.TryDeleteIfExists(codeformerMdlPath);
-                Process procCodeformerDl = OsUtils.NewProcess(true);
+                var procCodeformerDl = OsUtils.NewProcess(true);
                 procCodeformerDl.ErrorDataReceived += (sender, line) => { try { Logger.Log($"Downloading CodeFormer model ({line.Data.Trim().Split(' ')[0].GetInt()}%)...", false, ReplaceUiLogLine, Constants.Lognames.Installer); } catch { } };
                 procCodeformerDl.StartInfo.Arguments = $"/C curl -k -L \"https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/codeformer.pth\" -o {codeformerMdlPath.Wrap()}";
                 procCodeformerDl.Start();
@@ -295,7 +294,7 @@ namespace StableDiffusionGui.Installation
             }
         }
 
-        #endregion
+        #endregion Upscaling Models
 
         #region Uninstall
 
@@ -311,7 +310,7 @@ namespace StableDiffusionGui.Installation
             await IoUtils.TryDeleteIfExistsAsync(Path.Combine(Paths.GetDataPath(), "mb", "envs", "ldo"));
         }
 
-        #endregion
+        #endregion Uninstall
 
         #region Utils
 
@@ -326,7 +325,7 @@ namespace StableDiffusionGui.Installation
 
                 List<string> easyInstallPaths = new List<string>();
 
-                foreach (FileInfo eggLink in eggLinks)
+                foreach (var eggLink in eggLinks)
                 {
                     string nameNoExt = Path.GetFileNameWithoutExtension(eggLink.FullName);
 
@@ -344,11 +343,11 @@ namespace StableDiffusionGui.Installation
                     Logger.Log($"Fixed egg-link file {eggLink.FullName}.", true);
                 }
 
-                var easyInstallPth = Path.Combine(parentDir, "easy-install.pth");
+                string easyInstallPth = Path.Combine(parentDir, "easy-install.pth");
 
                 if (File.Exists(easyInstallPth))
                 {
-                    var easyInstallLines = File.ReadAllLines(easyInstallPth);
+                    string[] easyInstallLines = File.ReadAllLines(easyInstallPth);
                     List<string> newLines = new List<string>();
 
                     string splitText = $@"data\{Constants.Dirs.RepoSd}";
@@ -358,7 +357,7 @@ namespace StableDiffusionGui.Installation
 
                     foreach (string line in easyInstallLines.Select(x => x.ToLower()))
                     {
-                        var split = line.Split(splitText);
+                        string[] split = line.Split(splitText);
                         newLines.Add(newBasePath + splitText + split.Last());
                         Logger.Log(newLines.Last(), true);
                     }
@@ -367,7 +366,7 @@ namespace StableDiffusionGui.Installation
                     Logger.Log($"Fixed easy-install.pth.", true);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Logger.Log($"Error validating installation: {ex.Message}");
                 Logger.Log($"{ex.StackTrace}", true);
@@ -379,6 +378,6 @@ namespace StableDiffusionGui.Installation
             return Path.Combine(Paths.GetDataPath(), dir);
         }
 
-        #endregion
+        #endregion Utils
     }
 }

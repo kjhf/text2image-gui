@@ -1,19 +1,18 @@
-﻿using StableDiffusionGui.Data;
-using StableDiffusionGui.Io;
-using StableDiffusionGui.MiscUtils;
-using StableDiffusionGui.Os;
-using StableDiffusionGui.Ui;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Input;
+using StableDiffusionGui.Data;
+using StableDiffusionGui.Io;
+using StableDiffusionGui.MiscUtils;
+using StableDiffusionGui.Os;
+using StableDiffusionGui.Ui;
 
 namespace StableDiffusionGui.Main
 {
-    internal class TextToImage
+    internal static class TextToImage
     {
         public static TtiTaskInfo CurrentTask { get; set; } = null;
         public static TtiSettings LastTaskSettings { get; set; } = null;
@@ -45,7 +44,7 @@ namespace StableDiffusionGui.Main
                 TargetImgCount = batches.Sum(x => x.GetTargetImgCount()),
             };
 
-            foreach (TtiSettings s in batches)
+            foreach (var s in batches)
             {
                 if (s == null)
                     continue;
@@ -92,11 +91,12 @@ namespace StableDiffusionGui.Main
             Done();
         }
 
-        public enum NotifyMode { None, Ping, Notification, Both }
+        public enum NotifyMode
+        { None, Ping, Notification, Both }
 
         public static void Done()
         {
-            TimeSpan timeTaken = DateTime.Now - CurrentTask.StartTime;
+            var timeTaken = DateTime.Now - CurrentTask.StartTime;
             int imgCount = CurrentTask.ImgCount; // ImagePreview.SetImages(CurrentTask.OutPath, true, CurrentTask.TargetImgCount);
 
             if (imgCount > 0)
@@ -132,7 +132,7 @@ namespace StableDiffusionGui.Main
         {
             Canceled = true;
 
-            bool manual = reason.ToLower().Contains("manually");
+            bool manual = reason.IndexOf("manually", StringComparison.OrdinalIgnoreCase) >= 0;
             bool forceKill = manual && InputUtils.IsHoldingShift; // Shift force-kills the process
 
             Logger.Log($"Canceling. Manual: {manual} - Implementation: {(LastTaskSettings != null ? LastTaskSettings.Implementation.ToString() : "None")} - Force Kill: {forceKill}", true);
@@ -147,7 +147,7 @@ namespace StableDiffusionGui.Main
 
                 if (LastTaskSettings.Implementation == Implementation.StableDiffusion)
                 {
-                    if (Logger.GetSessionLogLastLines(Constants.Lognames.Sd, 15).Where(x => x.MatchesWildcard("*step */*")).Any()) // Only attempt a soft cancel if we've been generating anything
+                    if (Logger.GetSessionLogLastLines(Constants.Lognames.Sd, 15).Any(x => x.MatchesWildcard("*step */*"))) // Only attempt a soft cancel if we've been generating anything
                         await WaitForDreamPyCancel();
                     else // This condition should be true if we cancel while it's still initializing, so we can just force kill the process
                         TtiProcess.Kill();
@@ -167,7 +167,7 @@ namespace StableDiffusionGui.Main
         public static async Task WaitForDreamPyCancel()
         {
             Program.MainForm.RunBtn.Enabled = false;
-            DateTime cancelTime = DateTime.Now;
+            var cancelTime = DateTime.Now;
             TtiUtils.SoftCancelDreamPy();
             await Task.Delay(100);
 
@@ -179,7 +179,7 @@ namespace StableDiffusionGui.Main
                 lines = lines.Where(x => x.MatchesRegex(@"\[(?:(?!\]\s+\[)(?:.|\n))*\]\s+\[(?:(?!\]\:)(?:.|\n))*\]\:")).ToList();
                 Dictionary<string, TimeSpan> linesWithAge = new Dictionary<string, TimeSpan>();
 
-                foreach(string line in lines)
+                foreach (string line in lines)
                 {
                     if (linesWithAge.ContainsKey(line))
                         continue;

@@ -11,7 +11,7 @@ using static StableDiffusionGui.Forms.ImagePopupForm;
 
 namespace StableDiffusionGui.Ui
 {
-    internal class ImagePopup
+    internal static class ImagePopup
     {
         public static bool IsOpen { get { return Application.OpenForms.OfType<ImagePopupForm>().Any(); } }
         public static ImagePopupForm Form;

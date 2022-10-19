@@ -1,20 +1,21 @@
-﻿using ImageMagick;
+﻿using System.Drawing;
+using System.IO;
 using StableDiffusionGui.Data;
 using StableDiffusionGui.Forms;
 using StableDiffusionGui.Io;
 using StableDiffusionGui.Main;
 using StableDiffusionGui.MiscUtils;
-using System.Drawing;
-using System.IO;
 using Paths = StableDiffusionGui.Io.Paths;
 
 namespace StableDiffusionGui.Ui
 {
-    internal class InpaintingUtils
+    internal static class InpaintingUtils
     {
-        public static string MaskedImagePath { get { return Path.Combine(Paths.GetSessionDataPath(), "masked.png"); } }
+        public static string MaskedImagePath
+        { get { return Path.Combine(Paths.GetSessionDataPath(), "masked.png"); } }
 
         private static Image _currentMask;
+
         public static Image CurrentMask
         {
             get => _currentMask;
@@ -43,11 +44,11 @@ namespace StableDiffusionGui.Ui
 
         public static void PrepareInpainting(string initImgPath, Size targetSize)
         {
-            Image img = ImgUtils.ResizeImage(IoUtils.GetImage(initImgPath), targetSize.Width, targetSize.Height);
+            var img = ImgUtils.ResizeImage(IoUtils.GetImage(initImgPath), targetSize.Width, targetSize.Height);
 
             if (CurrentMask == null)
             {
-                var maskForm = new DrawForm(img);
+                DrawForm maskForm = new DrawForm(img);
                 maskForm.ShowDialog();
                 CurrentMask = maskForm.Mask;
             }
@@ -61,11 +62,11 @@ namespace StableDiffusionGui.Ui
             if (CurrentMask.Size != img.Size)
                 CurrentMask = ImgUtils.ResizeImage(CurrentMask, img.Size);
 
-            MagickImage maskedOverlay = ImgUtils.AlphaMask(ImgUtils.MagickImgFromImage(img), ImgUtils.MagickImgFromImage(CurrentMask), true);
+            var maskedOverlay = ImgUtils.AlphaMask(ImgUtils.MagickImgFromImage(img), ImgUtils.MagickImgFromImage(CurrentMask), true);
             maskedOverlay.Write(MaskedImagePath);
         }
 
-        public static void DeleteMaskedImage ()
+        public static void DeleteMaskedImage()
         {
             IoUtils.TryDeleteIfExists(MaskedImagePath);
         }

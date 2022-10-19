@@ -8,7 +8,7 @@ using System.Management;
 
 namespace StableDiffusionGui.Os
 {
-    class ProcessManager
+    static class ProcessManager
     {
         static List<SdGuiProcess> _subProcs = new List<SdGuiProcess>();
         public static List<SdGuiProcess> AllSubProcesses { get { return GetStartedSubProcesses(); } }
@@ -24,7 +24,7 @@ namespace StableDiffusionGui.Os
         {
             List<SdGuiProcess> running = new List<SdGuiProcess>();
 
-            foreach (SdGuiProcess p in new List<SdGuiProcess>(_subProcs))
+            foreach (var p in new List<SdGuiProcess>(_subProcs))
             {
                 try
                 {
@@ -41,7 +41,7 @@ namespace StableDiffusionGui.Os
         {
             List<SdGuiProcess> running = new List<SdGuiProcess>();
 
-            foreach (SdGuiProcess p in new List<SdGuiProcess>(_subProcs))
+            foreach (var p in new List<SdGuiProcess>(_subProcs))
             {
                 try
                 {
@@ -58,7 +58,7 @@ namespace StableDiffusionGui.Os
         {
             List<SdGuiProcess> running = new List<SdGuiProcess>();
 
-            foreach (SdGuiProcess p in new List<SdGuiProcess>(_subProcs))
+            foreach (var p in new List<SdGuiProcess>(_subProcs))
             {
                 try
                 {
@@ -82,9 +82,9 @@ namespace StableDiffusionGui.Os
 
             Logger.Log($"ProcMan: Killing {list.Count} subprocesses ({string.Join(", ", list.Select(x => x.Process.StartInfo.FileName))})", true);
 
-            foreach (SdGuiProcess np in list)
+            foreach (var np in list)
             {
-                Process p = np.Process;
+                var p = np.Process;
 
                 Logger.Log($"ProcMan: Killing {p.StartInfo.FileName} ({np.Type})...", true);
 

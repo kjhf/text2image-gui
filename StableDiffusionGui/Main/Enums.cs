@@ -2,24 +2,24 @@
 
 namespace StableDiffusionGui.Main
 {
-    public class Enums
+    public static class Enums
     {
-        public class Models
+        public static class Models
         {
             public enum Format { Fp16, Fp32 }
         }
 
-        public class StableDiffusion
+        public static class StableDiffusion
         {
             public enum Sampler { K_Euler_A, K_Euler, K_Lms, Ddim, Plms, K_Heun, K_Dpm_2, K_Dpm_2_A }
         }
 
-        public class Dreambooth
+        public static class Dreambooth
         {
             public enum TrainPreset { VeryHighQuality, HighQuality, MedQuality, LowQuality }
         }
 
-        public class Cuda
+        public static class Cuda
         {
             public enum Device { Automatic, Cpu }
         }

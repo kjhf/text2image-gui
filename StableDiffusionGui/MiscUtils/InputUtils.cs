@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace StableDiffusionGui.MiscUtils
 {
-    internal class InputUtils
+    internal static class InputUtils
     {
         public static bool IsHoldingShift { get { return Keyboard.Modifiers == ModifierKeys.Shift; } }
         public static bool IsHoldingCtrl { get { return Keyboard.Modifiers == ModifierKeys.Control; } }

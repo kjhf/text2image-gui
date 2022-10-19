@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace StableDiffusionGui.Installation
 {
-    internal class InstallationStatus
+    internal static class InstallationStatus
     {
         public static bool IsInstalledBasic { get { return HasConda() && HasSdRepo() && HasSdEnv() && HasSdModel(); } }
         public static bool IsInstalledAll { get { return IsInstalledBasic && HasSdUpscalers(); } }

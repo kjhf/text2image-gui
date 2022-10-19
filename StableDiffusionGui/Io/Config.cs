@@ -13,7 +13,7 @@ using StableDiffusionGui.Os;
 
 namespace StableDiffusionGui.Io
 {
-    class Config
+    static class Config
     {
         public static bool Ready = false;
         public static string ConfigPath = "";
@@ -67,7 +67,7 @@ namespace StableDiffusionGui.Io
         {
             Reload();
 
-            foreach (KeyValuePair<string, string> entry in keyValuePairs)
+            foreach (var entry in keyValuePairs)
                 _cachedConfig[entry.Key] = entry.Value;
 
             WriteConfig();
@@ -84,12 +84,12 @@ namespace StableDiffusionGui.Io
             try
             {
                 Dictionary<string, string> newDict = new Dictionary<string, string>();
-                Dictionary<string, string> deserializedConfig = JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(ConfigPath));
+                var deserializedConfig = JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(ConfigPath));
 
                 if (deserializedConfig == null)
                     deserializedConfig = new Dictionary<string, string>();
 
-                foreach (KeyValuePair<string, string> entry in deserializedConfig)
+                foreach (var entry in deserializedConfig)
                     newDict.Add(entry.Key, entry.Value);
 
                 _cachedConfig = newDict; // Use temp dict and only copy it back if no exception was thrown

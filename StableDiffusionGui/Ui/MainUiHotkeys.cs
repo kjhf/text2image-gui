@@ -6,7 +6,7 @@ using System.Windows.Input;
 
 namespace StableDiffusionGui.Ui
 {
-    internal class MainUiHotkeys
+    internal static class MainUiHotkeys
     {
         public static void Handle (Keys keys)
         {

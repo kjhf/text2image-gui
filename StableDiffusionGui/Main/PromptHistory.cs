@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace StableDiffusionGui.Main
 {
-    internal class PromptHistory
+    internal static class PromptHistory
     {
         public static List<TtiSettings> History = new List<TtiSettings>();
 

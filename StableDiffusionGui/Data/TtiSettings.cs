@@ -23,9 +23,9 @@ namespace StableDiffusionGui.Data
                 {
                     for (int i = 0; i < Iterations; i++)
                     {
-                        foreach (var scale in Params["scales"].Replace(" ", "").Split(","))
+                        foreach (string scale in Params["scales"].Replace(" ", "").Split(","))
                         {
-                            foreach (var strength in Params["initStrengths"].Replace(" ", "").Split(","))
+                            foreach (string strength in Params["initStrengths"].Replace(" ", "").Split(","))
                             {
                                 count++;
 

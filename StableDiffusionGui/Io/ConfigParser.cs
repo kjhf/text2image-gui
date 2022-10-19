@@ -3,7 +3,7 @@ using System.Windows.Forms;
 
 namespace StableDiffusionGui.Io
 {
-    internal class ConfigParser
+    internal static class ConfigParser
     {
 
         public enum StringMode { Any, Int, Float }
@@ -85,7 +85,7 @@ namespace StableDiffusionGui.Io
 
         public static void LoadGuiElement(HTAlt.WinForms.HTSlider slider, SaveValueAs convertMode = SaveValueAs.Unchanged, float convertValue = 1f)
         {
-            var value = Config.GetFloat(slider.Name);
+            float value = Config.GetFloat(slider.Name);
 
             if (convertMode == SaveValueAs.Multiplied)
                 value = value / convertValue;

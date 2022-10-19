@@ -1,16 +1,16 @@
-﻿using StableDiffusionGui.Data;
-using StableDiffusionGui.Io;
-using StableDiffusionGui.MiscUtils;
-using StableDiffusionGui.Ui;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using StableDiffusionGui.Data;
+using StableDiffusionGui.Io;
+using StableDiffusionGui.MiscUtils;
+using StableDiffusionGui.Ui;
 
 namespace StableDiffusionGui.Main
 {
-    internal class ImageExport
+    internal static class ImageExport
     {
         private static readonly int _maxPathLength = 255;
         private static readonly int _minimumImageAgeMs = 200;
@@ -40,7 +40,7 @@ namespace StableDiffusionGui.Main
                         break;
                     }
 
-                    var images = files.Where(x => x.CreationTime > TextToImage.CurrentTask.StartTime).OrderBy(x => x.CreationTime).ToList(); // Find images and sort by date, newest to oldest
+                    List<FileInfo> images = files.Where(x => x.CreationTime > TextToImage.CurrentTask.StartTime).OrderBy(x => x.CreationTime).ToList(); // Find images and sort by date, newest to oldest
                     images = images.Where(x => !IoUtils.IsFileLocked(x)).ToList(); // Ignore files that are still in use
                     images = images.Where(x => (DateTime.Now - x.LastWriteTime).TotalMilliseconds >= _minimumImageAgeMs).ToList(); // Wait a certain time to make sure python is done writing to it
 
@@ -128,6 +128,5 @@ namespace StableDiffusionGui.Main
             if (meta != null)
                 IoUtils.SetImageMetadata(imgPath, meta.ParsedText);
         }
-
     }
 }

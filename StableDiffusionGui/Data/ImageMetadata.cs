@@ -28,15 +28,13 @@ namespace StableDiffusionGui.Data
 
             try
             {
-                var split = dreamCli.Split("\"");
+                string[] split = dreamCli.Split("\"");
 
                 Prompt = split[1].Remove("\"").Trim();
                 GeneratedResolution = new Size();
 
                 bool newFormat = dreamCli.Contains("-W ") && dreamCli.Contains("-H "); // Check if metadata uses new format with spaces
-                var parameters = newFormat ? split.Last().Split("-").Select(x => $"-{x.Trim()}").ToList() : split.Last().Split(" ").Select(x => x.Trim()).ToList();
-
-                foreach (string s in parameters)
+                foreach (string s in newFormat ? split.Last().Split("-").Select(x => $"-{x.Trim()}").ToList() : split.Last().Split(" ").Select(x => x.Trim()).ToList())
                 {
                     if (s.StartsWith("-s"))
                         Steps = s.Remove(0, 2).GetInt();

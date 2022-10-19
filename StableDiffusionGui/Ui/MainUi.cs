@@ -1,22 +1,21 @@
-﻿using StableDiffusionGui.Data;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using StableDiffusionGui.Data;
 using StableDiffusionGui.Forms;
 using StableDiffusionGui.Installation;
 using StableDiffusionGui.Io;
 using StableDiffusionGui.Main;
 using StableDiffusionGui.Os;
 using StableDiffusionGui.Properties;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace StableDiffusionGui.Ui
 {
-    internal class MainUi
+    internal static class MainUi
     {
         public static int CurrentSteps;
         public static float CurrentScale;
@@ -25,25 +24,31 @@ namespace StableDiffusionGui.Ui
         public static int CurrentResH;
 
         private static string _currentInitImgPath;
-        public static string CurrentInitImgPath {
+
+        public static string CurrentInitImgPath
+        {
             get => _currentInitImgPath;
-            set {
+            set
+            {
                 _currentInitImgPath = value;
                 Logger.Log(string.IsNullOrWhiteSpace(value) ? "" : $"Now using initialization image {Path.GetFileName(value).Wrap()}.");
-                if(InpaintingUtils.CurrentMask != null)
+                if (InpaintingUtils.CurrentMask != null)
                 {
                     InpaintingUtils.CurrentMask = null;
                     Logger.Log("Inpainting mask has been cleared.");
                 }
             }
         }
-        
+
         public static float CurrentInitImgStrength;
 
         private static string _currentEmbeddingPath;
-        public static string CurrentEmbeddingPath {
+
+        public static string CurrentEmbeddingPath
+        {
             get => _currentEmbeddingPath;
-            set {
+            set
+            {
                 _currentEmbeddingPath = value;
                 Logger.Log(string.IsNullOrWhiteSpace(value) ? "" : $"Now using learned concept {Path.GetFileName(value).Wrap()}.");
             }
@@ -56,17 +61,17 @@ namespace StableDiffusionGui.Ui
 
         public static Dictionary<string, string> UiStrings = new Dictionary<string, string>
         {
-            { Enums.StableDiffusion.Sampler.K_Euler_A.ToString(), "Euler Ancestral" },
-            { Enums.StableDiffusion.Sampler.K_Euler.ToString(), "Euler" },
-            { Enums.StableDiffusion.Sampler.K_Lms.ToString(), "LMS" },
-            { Enums.StableDiffusion.Sampler.Ddim.ToString(), "DDIM" },
-            { Enums.StableDiffusion.Sampler.Plms.ToString(), "PLMS" },
-            { Enums.StableDiffusion.Sampler.K_Heun.ToString(), "Heun" },
-            { Enums.StableDiffusion.Sampler.K_Dpm_2.ToString(), "DPM 2" },
-            { Enums.StableDiffusion.Sampler.K_Dpm_2_A.ToString(), "DPM 2 Ancestral" },
+            { nameof(Enums.StableDiffusion.Sampler.K_Euler_A), "Euler Ancestral" },
+            { nameof(Enums.StableDiffusion.Sampler.K_Euler), "Euler" },
+            { nameof(Enums.StableDiffusion.Sampler.K_Lms), "LMS" },
+            { nameof(Enums.StableDiffusion.Sampler.Ddim), "DDIM" },
+            { nameof(Enums.StableDiffusion.Sampler.Plms), "PLMS" },
+            { nameof(Enums.StableDiffusion.Sampler.K_Heun), "Heun" },
+            { nameof(Enums.StableDiffusion.Sampler.K_Dpm_2), "DPM 2" },
+            { nameof(Enums.StableDiffusion.Sampler.K_Dpm_2_A), "DPM 2 Ancestral" },
         };
 
-        public static void DoStartupChecks ()
+        public static void DoStartupChecks()
         {
             if (!Debugger.IsAttached)
             {
@@ -131,7 +136,7 @@ namespace StableDiffusionGui.Ui
 
                 if (ValidInitEmbeddingExtensions.Contains(Path.GetExtension(paths[0]).ToLower())) // Ask to use as embedding (finetuned model)
                 {
-                    DialogResult dialogResult = UiUtils.ShowMessageBox($"Do you want to load this concept?", $"Dropped {Path.GetFileName(paths[0]).Trunc(40)}", MessageBoxButtons.YesNo);
+                    var dialogResult = UiUtils.ShowMessageBox($"Do you want to load this concept?", $"Dropped {Path.GetFileName(paths[0]).Trunc(40)}", MessageBoxButtons.YesNo);
 
                     if (dialogResult == DialogResult.Yes)
                         CurrentEmbeddingPath = paths[0];
@@ -141,11 +146,11 @@ namespace StableDiffusionGui.Ui
             }
         }
 
-        public static void HandlePaste ()
+        public static void HandlePaste()
         {
             try
             {
-                Image clipboardImg = Clipboard.GetImage();
+                var clipboardImg = Clipboard.GetImage();
 
                 if (clipboardImg == null)
                     return;
@@ -160,14 +165,14 @@ namespace StableDiffusionGui.Ui
             }
         }
 
-        public static string SanitizePrompt (string prompt)
+        public static string SanitizePrompt(string prompt)
         {
             //prompt = new Regex(@"[^a-zA-Z0-9 -!*,.:()_\-]").Replace(prompt, "");
             prompt = prompt.Replace(" -", " ");
 
             while (prompt.StartsWith("-"))
                 prompt = prompt.Substring(1);
-            
+
             while (prompt.EndsWith("-"))
                 prompt = prompt.Remove(prompt.Length - 1);
 
@@ -180,7 +185,7 @@ namespace StableDiffusionGui.Ui
 
             if (customScalesText.MatchesWildcard("* > * : *"))
             {
-                var splitMinMax = customScalesText.Trim().Split(':')[0].Split('>');
+                string[] splitMinMax = customScalesText.Trim().Split(':')[0].Split('>');
                 float valFrom = splitMinMax[0].GetFloat();
                 float valTo = splitMinMax[1].Trim().GetFloat();
                 float step = customScalesText.Split(':').Last().GetFloat();
@@ -215,14 +220,14 @@ namespace StableDiffusionGui.Ui
 
             if (customStrengthsText.MatchesWildcard("* > * : *"))
             {
-                var splitMinMax = customStrengthsText.Trim().Split(':')[0].Split('>');
+                string[] splitMinMax = customStrengthsText.Trim().Split(':')[0].Split('>');
                 float valFrom = splitMinMax[0].GetFloat();
                 float valTo = splitMinMax[1].Trim().GetFloat();
                 float step = customStrengthsText.Split(':').Last().GetFloat();
 
                 List<float> incrementStrengths = new List<float>();
 
-                if(valFrom < valTo)
+                if (valFrom < valTo)
                 {
                     for (float f = valFrom; f < (valTo + 0.01f); f += step)
                         incrementStrengths.Add(1f - f);
@@ -244,12 +249,13 @@ namespace StableDiffusionGui.Ui
             return strengths;
         }
 
-        public enum PromptFieldSizeMode { Expand, Collapse, Toggle }
+        public enum PromptFieldSizeMode
+        { Expand, Collapse, Toggle }
 
-        public static void SetPromptFieldSize (PromptFieldSizeMode sizeMode = PromptFieldSizeMode.Toggle)
+        public static void SetPromptFieldSize(PromptFieldSizeMode sizeMode = PromptFieldSizeMode.Toggle)
         {
             var form = Program.MainForm;
-            int smallHeight = 59;
+            const int smallHeight = 59;
 
             if (sizeMode == PromptFieldSizeMode.Toggle)
                 sizeMode = form.TextboxPrompt.Height == smallHeight ? PromptFieldSizeMode.Expand : PromptFieldSizeMode.Collapse;
@@ -273,7 +279,7 @@ namespace StableDiffusionGui.Ui
         {
             var gpus = await GpuUtils.GetCudaGpus();
             List<string> gpuNames = gpus.Select(x => x.FullName).ToList();
-            int maxGpusToListInTitle = 2;
+            const int maxGpusToListInTitle = 2;
 
             if (gpuNames.Count < 1)
                 Program.MainForm.Text = $"{Program.MainForm.Text} - No CUDA GPUs available.";
