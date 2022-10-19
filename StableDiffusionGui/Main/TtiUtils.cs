@@ -34,10 +34,10 @@ namespace StableDiffusionGui.Main
             var mdl = Paths.GetModel(mdlName);
 
             string text = $"{keyName}:\n" +
-                $"    config: configs/stable-diffusion/v1-inference.yaml\n" +
+                "    config: configs/stable-diffusion/v1-inference.yaml\n" +
                 $"    weights: {(mdl == null ? "unknown.ckpt" : mdl.FullName.Replace(@"\", "/").Wrap())}\n" +
-                $"    width: 512\n" +
-                $"    height: 512\n";
+                "    width: 512\n" +
+                "    height: 512\n";
 
             File.WriteAllText(Path.Combine(Paths.GetDataPath(), Constants.Dirs.RepoSd, "configs", "models.yaml"), text);
         }
@@ -86,7 +86,7 @@ namespace StableDiffusionGui.Main
 
             if (string.IsNullOrWhiteSpace(savedModelFileName))
             {
-                TextToImage.Cancel($"No Stable Diffusion model file has been set.\nPlease set one in the settings.");
+                TextToImage.Cancel("No Stable Diffusion model file has been set.\nPlease set one in the settings.");
                 new SettingsForm().ShowDialog();
                 return false;
             }
@@ -114,7 +114,7 @@ namespace StableDiffusionGui.Main
             if (!allCudaDevices && cudaDeviceOpt > 0)
             {
                 if (cudaDeviceOpt == 1) // CPU
-                    devicesArg = $" && SET CUDA_VISIBLE_DEVICES=\"\""; // Set env var to empty string
+                    devicesArg = " && SET CUDA_VISIBLE_DEVICES=\"\""; // Set env var to empty string
                 else
                     devicesArg = $" && SET CUDA_VISIBLE_DEVICES={cudaDeviceOpt - 2}"; // Set env var to selected GPU ID (-2 because the first two options are Automatic and CPU)
             }

@@ -57,7 +57,7 @@ namespace StableDiffusionGui.Main
 
                 if (!s.Prompts.Any())
                 {
-                    Logger.Log($"No valid prompts to run!");
+                    Logger.Log("No valid prompts to run!");
                     continue;
                 }
 

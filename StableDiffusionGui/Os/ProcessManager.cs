@@ -141,7 +141,7 @@ namespace StableDiffusionGui.Os
                         {
                             Logger.Log($"Killing {procWithCli} (PID {pid})", true);
                             OsUtils.KillProcessTree(pid);
-                            Logger.Log($"Killed successfully.", true);
+                            Logger.Log("Killed successfully.", true);
                         }
                         catch (Exception ex)
                         {

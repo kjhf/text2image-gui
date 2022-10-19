@@ -80,7 +80,7 @@ namespace StableDiffusionGui.Forms
             }
             else
             {
-                textboxInfo.Text += $"No Metadata Found in Image.";
+                textboxInfo.Text += "No Metadata Found in Image.";
             }
                 
         }

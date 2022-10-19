@@ -17,7 +17,7 @@ namespace StableDiffusionGui.Ui
 
             try
             {
-                string url = $"https://raw.githubusercontent.com/n00mkrad/text2image-gui/main/changelog-motd.txt";
+                string url = "https://raw.githubusercontent.com/n00mkrad/text2image-gui/main/changelog-motd.txt";
                 text = await new WebClient().DownloadStringTaskAsync(new Uri(url));
             }
             catch (Exception e)
@@ -34,7 +34,7 @@ namespace StableDiffusionGui.Ui
 
             try
             {
-                string url = $"https://raw.githubusercontent.com/n00mkrad/flowframes/main/patrons.csv";
+                string url = "https://raw.githubusercontent.com/n00mkrad/flowframes/main/patrons.csv";
                 string csvData = await new WebClient().DownloadStringTaskAsync(new Uri(url));
                 text = ParsePatreonCsv(csvData);
             }

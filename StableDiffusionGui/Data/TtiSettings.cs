@@ -4,7 +4,8 @@ using System.Linq;
 
 namespace StableDiffusionGui.Data
 {
-    public enum Implementation { StableDiffusion, StableDiffusionOptimized }
+    public enum Implementation
+    { StableDiffusion, StableDiffusionOptimized }
 
     public class TtiSettings
     {
@@ -46,9 +47,9 @@ namespace StableDiffusionGui.Data
 
         public override string ToString()
         {
-            string init = System.IO.File.Exists(Params["initImg"]) ? $" - With Image" : "";
-            string emb = System.IO.File.Exists(Params["embedding"]) ? $" - With Concept" : "";
-            string extraPrompts = Prompts.Length > 1 ? $" (+{Prompts.Length-1})" : "";
+            string init = System.IO.File.Exists(Params["initImg"]) ? " - With Image" : "";
+            string emb = System.IO.File.Exists(Params["embedding"]) ? " - With Concept" : "";
+            string extraPrompts = Prompts.Length > 1 ? $" (+{Prompts.Length - 1})" : "";
             return $"\"{Prompts.FirstOrDefault().Trunc(75)}\"{extraPrompts} - {Iterations} Images - {Params["steps"]} Steps - Seed {Params["seed"]} - {Params["res"]} - Sampler {Params["sampler"]}{init}{emb}";
         }
     }

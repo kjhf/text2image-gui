@@ -143,7 +143,7 @@ namespace StableDiffusionGui.Forms
                 }
                 else
                 {
-                    Logger.Log($"Failed to prune model.");
+                    Logger.Log("Failed to prune model.");
                 }
             }
 

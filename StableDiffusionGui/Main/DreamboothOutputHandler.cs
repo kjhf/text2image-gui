@@ -35,7 +35,7 @@ namespace StableDiffusionGui.Main
                 Logger.Log("Validation sanity check...", false, replace);
 
             if (line.Contains("Training:") && line.Contains("?it/s"))
-                Logger.Log($"Starting training...", false, replace);
+                Logger.Log("Starting training...", false, replace);
 
             string lastLogLines = string.Join("\n", Logger.GetSessionLogLastLines(Constants.Lognames.Dreambooth, 6));
 
@@ -55,10 +55,10 @@ namespace StableDiffusionGui.Main
             }
 
             if (line.Contains("Saving"))
-                Logger.Log($"Saving checkpoint...", false, replace);
+                Logger.Log("Saving checkpoint...", false, replace);
 
             if (line.Contains("Pruning..."))
-                Logger.Log($"Pruning model...", false, replace);
+                Logger.Log("Pruning model...", false, replace);
 
             if (line.MatchesWildcard("*%|*/*[*B/s]*") && !(line.IndexOf("it/s", StringComparison.OrdinalIgnoreCase) >= 0) && !(line.IndexOf("s/it", StringComparison.OrdinalIgnoreCase) >= 0))
             {
@@ -80,7 +80,7 @@ namespace StableDiffusionGui.Main
             if (!_hasErrored && line.Contains("usage: "))
             {
                 _hasErrored = true;
-                UiUtils.ShowMessageBox($"Invalid CLI syntax.", UiUtils.MessageType.Error);
+                UiUtils.ShowMessageBox("Invalid CLI syntax.", UiUtils.MessageType.Error);
             }
 
             if (!_hasErrored && line.IndexOf("illegal memory access", StringComparison.OrdinalIgnoreCase) >= 0)

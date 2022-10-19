@@ -160,7 +160,7 @@ namespace StableDiffusionGui.Forms
             if (File.Exists(outPath))
                 Logger.Log($"Done. Saved trained model to:\n{outPath.Replace(Paths.GetDataPath(), "Data")}");
             else
-                Logger.Log($"Training failed - model file was not saved.");
+                Logger.Log("Training failed - model file was not saved.");
         }
 
         private void btnTrainImgsBrowse_Click(object sender, EventArgs e)

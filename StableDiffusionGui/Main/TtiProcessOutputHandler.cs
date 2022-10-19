@@ -123,7 +123,7 @@ namespace StableDiffusionGui.Main
             if (!_hasErrored && line.Contains("usage: "))
             {
                 _hasErrored = true;
-                UiUtils.ShowMessageBox($"Invalid CLI syntax.", UiUtils.MessageType.Error);
+                UiUtils.ShowMessageBox("Invalid CLI syntax.", UiUtils.MessageType.Error);
             }
 
             if (!_hasErrored && line.IndexOf("illegal memory access", StringComparison.OrdinalIgnoreCase) >= 0)

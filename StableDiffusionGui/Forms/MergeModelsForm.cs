@@ -141,7 +141,7 @@ namespace StableDiffusionGui.Forms
             if (File.Exists(outPath))
                 Logger.Log($"Done. Saved merged model to:\n{outPath.Replace(Paths.GetDataPath(), "Data")}");
             else
-                Logger.Log($"Failed to merge models.");
+                Logger.Log("Failed to merge models.");
 
             //if (File.Exists(outPath))
             //    UiUtils.ShowMessageBox($"Done.\n\nSaved merged model to:\n{outPath}");

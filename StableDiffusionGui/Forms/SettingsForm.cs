@@ -130,8 +130,8 @@ namespace StableDiffusionGui.Forms
         private void checkboxOptimizedSd_CheckedChanged(object sender, EventArgs e)
         {
             if (_ready && checkboxOptimizedSd.Checked)
-                UiUtils.ShowMessageBox($"Warning: Low Memory Mode disables several features, such as custom samplers or seamless mode.\n" +
-            $"Only keep this option enabled if your GPU has less than 6 GB of memory.");
+                UiUtils.ShowMessageBox("Warning: Low Memory Mode disables several features, such as custom samplers or seamless mode.\n" +
+            "Only keep this option enabled if your GPU has less than 6 GB of memory.");
         }
 
         private void btnRefreshModelsDropdown_Click(object sender, EventArgs e)
